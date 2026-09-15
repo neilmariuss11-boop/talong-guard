@@ -20,15 +20,15 @@ Agricultural and Biosystems Engineering
 
 ## SLIDE 2: THE PROBLEM
 
-### Filipino eggplant farmers are losing ₱33.85 BILLION per year to a single pest.
+### Filipino eggplant farmers are losing ₱33.85 BILLION per year to a single pest. [1]
 
 **The Eggplant Fruit and Shoot Borer** (*Leucinodes orbonalis*)
 
-- Eggplant = #1 vegetable crop in the Philippines (21,225 hectares)
-- Borer larvae destroy **51-80%** of the harvest
-- By the time farmers SEE damage, fruit is already reject-grade
-- Farmers spray pesticides **up to 80 times per season** — blindly
-- Pesticide costs eat **20-40%** of total production cost
+- Eggplant = #1 vegetable crop in the Philippines (21,225 hectares) [2]
+- Borer larvae destroy **51–73%** of the harvest [3]
+- By the time farmers SEE damage, fruit is already reject-grade [4]
+- Farmers spray pesticides **up to 80 times per season** — blindly [5]
+- Pesticide costs eat **20–40%** of total production cost [1]
 
 **The real problem: farmers have NO way to know WHEN pests are coming.**
 
@@ -42,8 +42,8 @@ Agricultural and Biosystems Engineering
 
 ### The moths that cause the damage are detectable BEFORE they lay eggs.
 
-- Male EFSB moths are attracted to **sex pheromone lures**
-- Scientists know the exact threshold: **6-8 moths/trap/night = time to act**
+- Male EFSB moths are attracted to **sex pheromone lures** (E-11-hexadecenyl acetate) [4]
+- Scientists know the exact threshold: **6–8 moths/trap/night = time to act** [4][7]
 - Below threshold = no spray needed, save your money
 - Above threshold = spray TODAY before eggs hatch
 
@@ -79,7 +79,7 @@ Until now.
 
 ### TAM / SAM / SOM
 
-**TAM — Total Addressable Market (All PH eggplant farms)**
+**TAM — Total Addressable Market (All PH eggplant farms)** [2]
 - 21,225 hectares x 2 monitoring traps/ha = **42,450 units**
 - Hardware: 42,450 x P3,000 = **P127.4 million**
 - Annual lure refills: 42,450 x 4 lures x P100 = **P17.0 million/year**
@@ -114,7 +114,7 @@ Until now.
 ### Why This Works
 - **Device sells once** — customer acquisition cost paid
 - **Lures sell forever** — P300-400/farmer/season recurring
-- **Farmer ROI:** Device costs P3,000. Saves P10,000-25,000/season in pesticide.
+- **Farmer ROI:** Device costs P3,000. Saves P10,000–25,000/season in pesticide. [1]
 - **Payback: less than one harvest.**
 
 *[Visual: cost comparison bar chart — Calendar spraying P30k vs TalongGuard P3.4k]*
@@ -125,7 +125,7 @@ Until now.
 
 ### Nobody else occupies this space.
 
-| | Manual Trap | Pest ID Apps | Commercial Smart Trap | TalongGuard |
+| | Manual Trap | Pest ID Apps | Commercial Smart Trap [8] | TalongGuard |
 |---|:-:|:-:|:-:|:-:|
 | **Price** | P200-500 | Free | P48,000-56,000 | **P2,500-3,500** |
 | **Automated counting** | No | No | Yes | **Yes** |
@@ -135,7 +135,7 @@ Until now.
 | **Affordable for smallholders** | Yes | Yes | No | **Yes** |
 | **Solar powered** | N/A | N/A | Some | **Yes** |
 
-**TalongGuard is 15-20x cheaper than commercial smart traps** while delivering the core value: automated pest threshold alerts.
+**TalongGuard is 15–20x cheaper than commercial smart traps** [8] while delivering the core value: automated pest threshold alerts.
 
 *[Visual: positioning map — X: Price (cheap to expensive), Y: Intelligence (manual to automated). TalongGuard in sweet spot.]*
 
@@ -146,9 +146,9 @@ Until now.
 ### What we've done so far
 
 - Customer interviews with eggplant farmers in Mindoro — confirmed borer as #1 pain
-- Scientific validation — pheromone monitoring proven (peer-reviewed studies from PH, Bangladesh, India)
+- Scientific validation — pheromone monitoring proven [4][6][7]
 - BOM costed — prototype buildable under P2,000/unit
-- Economic threshold established — 6-8 moths/trap/night (published research)
+- Economic threshold established — 6–8 moths/trap/night [4][7]
 - [Pending] Prototype build — components sourced, assembly in progress
 - [Pending] Field pilot — 3-5 farmers, 1 cropping season
 
@@ -203,8 +203,8 @@ Until now.
 ### Key Assumptions
 - Selling price: P3,000/unit average
 - Production cost: P1,500 (Y1) dropping to P1,200 (Y3) at scale
-- 4 lure refills per active unit per year (2 cropping seasons)
-- Lure cost: P30 sourced, sold at P100 (70% margin)
+- 4 lure refills per active unit per year (2 cropping seasons) — lure lifespan 30–45 days [4][9]
+- Lure cost: P30 sourced, sold at P100 (70% margin) [9]
 - Y2: expand to MIMAROPA region
 - Y3: national rollout via DA partnership + agri-supply distribution
 
@@ -263,7 +263,7 @@ Until now.
 
 ## SLIDE 13: CLOSING
 
-### P33.85 billion lost every year to a pest that science already knows how to detect.
+### P33.85 billion lost every year [1] to a pest that science already knows how to detect. [4]
 
 ### TalongGuard puts that science in every farmer's field — for P3,000.
 
@@ -271,3 +271,26 @@ Until now.
 *(Don't guess. Know.)*
 
 *[Visual: farmer in field with TalongGuard, phone showing SMS alert]*
+
+---
+
+## SLIDE 14: REFERENCES
+
+| # | Source | Key Data Used |
+|---|--------|---------------|
+| [1] | ISAAA (2021). "Bt Eggplant Could Mitigate Economic Loss of ₱33.85 Billion Annually." [isaaa.org](https://www.isaaa.org/blog/entry/default.asp?BlogDate=2/3/2021) | ₱33.85B annual loss; 20–40% production cost on pesticides; pesticide savings estimate |
+| [2] | Philippine Statistics Authority (2023). Eggplant production statistics. [psa.gov.ph](https://psa.gov.ph/vegetable-root-crops/eggplant) | 21,225 hectares; 248,000 MT/year; #1 vegetable crop |
+| [3] | Hautea, D.M. et al. (2016). "Field performance of Bt eggplants in the Philippines." *PLOS ONE*, 11(6), e0157498. [doi](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0157498) | 51–73% yield loss from EFSB at high pest pressure |
+| [4] | Cork, A. et al. (2003). "Female sex pheromone of brinjal fruit and shoot borer." *Bulletin of Entomological Research*, 93(2), 107–113. [cambridge.org](https://www.cambridge.org/core/journals/bulletin-of-entomological-research/article/abs/female-sex-pheromone-of-brinjal-fruit-and-shoot-borer-leucinodes-orbonalis-lepidoptera-pyralidae-trap-optimization-and-application-in-ipm-trials/7B3B195A5566DC1E675FACB4A0365BD4) | Pheromone lure composition (E-11-hexadecenyl acetate); IPM trial efficacy; moth trapping methodology |
+| [5] | ISAAA (2020). "Questions and Answers about Bt Talong." [isaaa.org](https://www.isaaa.org/blog/entry/default.asp?BlogDate=9/23/2020); UPLB-CAFS | 60–80 spray applications per cropping season |
+| [6] | Kabir, M.H. et al. (2023). "Understanding vegetable farmers' adoption, dis-adoption, and non-adoption decisions." *PLOS ONE*, 18(10), e0292254. [pmc](https://pmc.ncbi.nlm.nih.gov/articles/PMC10540953/) | 27% dis-adoption rate for pheromone traps; labor as #1 barrier |
+| [7] | Amin, R. et al. (2017). "IPM approaches against eggplant shoot and fruit borer." *Journal of Crop Protection*, 6(2). [researchgate](https://www.researchgate.net/publication/317701467) | 6–8 moths/trap/night ETL; 35–36% yield increase with IPM; fruit damage reduction to 20–26% |
+| [8] | Trapview (trapview.com); iScout (iscout.com) — commercial smart trap pricing | $850–1,000+ per unit (₱48,000–56,000) |
+| [9] | IndiaMART supplier listings. [indiamart.com](https://www.indiamart.com/proddetail/leucinodes-orbonalis-brinjal-fruit-shoot-borer-pheromone-lure-bsfb-22240728173.html) | Pheromone lure pricing (bulk); 30–45 day field lifespan |
+
+### Additional Sources Consulted
+
+- Srinivasan, R. (2008). "Integrated Pest Management for eggplant fruit and shoot borer." AVRDC Publication. — Knowledge gap in farmer understanding of pest lifecycle
+- Sangchan, S. et al. (2014). "Insecticide residues in soil, water, and eggplant fruits." *Environmental Health and Preventive Medicine*, 19(1), 12–20. — 63.8% of farmers report pesticide-related health effects
+- Lu, J.L. (2009). "Total pesticide exposure calculation among vegetable farmers in Benguet." *J. Environmental and Public Health*, 2009, 412054. — 63.3% muscle pains, 55% muscle weakness among vegetable farmers
+- Supreme Court of the Philippines (2024). Writ of Kalikasan on GM rice and eggplant. — Bt eggplant court-banned indefinitely
