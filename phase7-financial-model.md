@@ -1,283 +1,215 @@
-# Phase 7: Financial Model — TalongGuard
-**2026-09-12 | Loop Turn 6**
+# Phase 7: Financial Model — Autodissemination Station
+**Rewritten 2026-09-27** (replaces the eggplant ESP32 monitoring-trap model)
+
+> All figures in Philippine pesos (₱). US$1 ≈ ₱58; ₹1 ≈ ₱0.68 (Sept 2026 assumption).
+> Sources for market and cost inputs: `research-synthesis.md` [R#]. The numbers were computed with a script so the totals are consistent. Change an assumption in §8 and recompute every table that depends on it.
 
 ---
 
 ## 1. UNIT ECONOMICS
 
-### A. Device Unit Economics
+### 1.1 Products
 
-| Component | Prototype (P) | Scale 50+ (P) | Scale 500+ (P) |
-|-----------|--------------|---------------|-----------------|
-| ESP32 DevKit V1 | 350 | 280 | 220 |
-| IR break-beam sensor pair | 120 | 90 | 70 |
-| SIM800L GSM module | 280 | 220 | 180 |
-| GSM antenna | 40 | 30 | 25 |
-| Solar panel 5V 1W | 250 | 200 | 160 |
-| TP4056 + protection | 35 | 25 | 20 |
-| 18650 battery 3400mAh | 150 | 120 | 100 |
-| Battery holder | 20 | 15 | 10 |
-| Resistors + cap + LED | 30 | 15 | 10 |
-| PETG filament (~200g) | 200 | 160 | 120 |
-| Silicone sealant + gasket | 30 | 20 | 15 |
-| M3 hardware | 20 | 10 | 8 |
-| PCB (JLCPCB) | 200 | 60 | 35 |
-| Wires, connectors | 50 | 30 | 20 |
-| Packaging + label | 0 | 50 | 40 |
-| Assembly labor | 0 | 150 | 100 |
-| **TOTAL** | **P1,775** | **P1,475** | **P1,133** |
+| Product | Price | COGS | Gross margin | Margin % |
+|---|---|---|---|---|
+| Station (one-time) | ₱690 | ₱285 | ₱405 | 58.7% |
+| Season Kit (per Station per season: 3 lures + 6 cartridges) | ₱520 | ₱330 | ₱190 | 36.5% |
+| **Station + first Kit** | ₱1,210 | ₱615 | **₱595** | 49.2% |
 
-| Metric | Scale 50+ | Scale 500+ |
-|--------|-----------|------------|
-| BOM + Labor | P1,475 | P1,133 |
-| Selling Price | P3,000 | P2,800 |
-| **Gross Margin** | **P1,525 (51%)** | **P1,667 (60%)** |
+### 1.2 COGS build-up
+- **Station ₱285:** materials ₱235 + labor ₱50 (BOM in `phase5-device-design.md` §4.1; batch of 100).
+- **Season Kit ₱330:** 3 lures × ₱60 (landed) + 6 cartridges × ₱20 + ₱30 packaging, gloves and instructions.
+- **Cartridge ₱20:** conidia 2 g ₱4, velvet ₱7, PET ₱2, foil ₱3, silica ₱2, label and labor ₱2.
+- **Lure ₱60 landed:** Indian list price ₹25 ≈ ₱17 [R23] + international shipping, customs and broker fees for a small order, spread over ~300 lures. **This is the most uncertain cost. Get 2 real quotes in October.**
 
-### B. Pheromone Lure Economics
+### 1.3 Farmer economics (per hectare, 4 Stations/ha)
 
-| Item | Cost (P) |
-|------|----------|
-| Lure purchase (India, bulk 100+) | 30 |
-| Shipping per lure (amortized) | 10 |
-| Packaging (resealable foil) | 5 |
-| **Total cost per lure** | **P45** |
-| **Selling price** | **P100** |
-| **Gross margin** | **P55 (55%)** |
+| Item | Value |
+|---|---|
+| First-season cost | 4 × ₱1,210 = **₱4,840/ha** |
+| Following seasons | 4 × ₱520 = **₱2,080/ha** |
+| Onion gross value/ha | 9.06 t/ha [R36] × ₱30/kg (Feb 2026 glut price [R20]) = **₱271,800** |
+| Kit cost as % of gross | **0.77%** |
+| First season as % of gross | **1.78%** |
+| Production cost/ha (reference) | ₱200,000–300,000 [R20] → the kit is 0.7–1.0% of production cost |
+| Break-even | Prevent **≥0.77%** yield loss, OR save the cost of about 1 insecticide application (to confirm in interviews) |
+| Downside reference | Outbreak-year inputs ≈ ₱400,000/ha, still losing about half the crop [R21] |
 
-### C. Customer Lifetime Value (3-Year)
+At a normal farmgate price of ₱60–80/kg, gross value doubles or more and the kit becomes about 0.4% of it.
 
-| Item | Amount (P) |
-|------|-----------|
-| Device (one-time) | 3,000 |
-| Lure refills x3 years (4/year) | 1,200 |
-| **3-Year LTV** | **4,200** |
-| 3-Year cost to serve | 1,880 |
-| **3-Year Gross Profit/Customer** | **2,320 (55%)** |
+### 1.4 Customer lifetime value (1 hectare = 4 Stations, 3 seasons, 80% season-to-season retention)
+- Seasons of kit purchases = 1 + 0.8 + 0.64 = 2.44
+- **Lifetime revenue** = 4 × ₱690 + 4 × ₱520 × 2.44 = **₱7,835**
+- **Lifetime gross margin** = 4 × ₱405 + 4 × ₱190 × 2.44 = **₱3,474**
+- **Target customer acquisition cost** (field days, visits, demo units): ≤ ₱1,000/ha, giving LTV/CAC ≥ 3.5.
 
 ---
 
-## 2. THREE-YEAR P&L
+## 2. YEAR 1 (Oct 2026 – Sep 2027): PILOT, MONTHLY CASH PLAN
 
-### Year 1 — Monthly (Pilot + First Sales)
+**Assumptions:**
+- 100 Stations + 100 Kits built (Nov–Dec).
+- **40 Stations go to core demo farms free** (10 ha).
+- **60 Stations are sold as hardware only** to "cooperator" farmers (15 ha): 20 in Jan and 40 in Feb.
+- **No cartridges are sold in the demonstration season** (FPA; `proposal.md` §9.2). Cooperators receive lures and cartridges free as demonstration materials, so all 100 Kits are a cost with no revenue in Year 1.
+- ₱180,000 external funding received in October.
 
-| Mo | Activity | Units | HW Rev | Lure Rev | Total Rev | COGS | OpEx | Net |
-|----|----------|-------|--------|----------|-----------|------|------|-----|
-| 1 | Interviews | 0 | 0 | 0 | 0 | 0 | 2,000 | -2,000 |
-| 2 | Sourcing | 0 | 0 | 0 | 0 | 0 | 2,000 | -2,000 |
-| 3 | Build prototypes | 0 | 0 | 0 | 0 | 3,960 | 2,000 | -5,960 |
-| 4 | Lab testing | 0 | 0 | 0 | 0 | 0 | 2,000 | -2,000 |
-| 5 | Pilot starts | 0 | 0 | 0 | 0 | 600 | 3,000 | -3,600 |
-| 6 | Pilot running | 0 | 0 | 0 | 0 | 300 | 3,000 | -3,300 |
-| 7 | Pilot running | 0 | 0 | 0 | 0 | 300 | 3,000 | -3,300 |
-| 8 | Pilot report | 0 | 0 | 0 | 0 | 0 | 2,000 | -2,000 |
-| 9 | Batch production | 0 | 0 | 0 | 0 | 73,750 | 5,000 | -78,750 |
-| 10 | Sales begin | 30 | 90,000 | 3,000 | 93,000 | 0 | 8,000 | 85,000 |
-| 11 | Sales ramp | 35 | 105,000 | 6,500 | 111,500 | 0 | 8,000 | 103,500 |
-| 12 | Sales continue | 35 | 105,000 | 10,000 | 115,000 | 0 | 8,000 | 107,000 |
-| **Y1** | | **100** | **300,000** | **19,500** | **319,500** | **78,910** | **48,000** | **192,590** |
+| Month | Revenue | COGS | Fixed | Net | Cash balance |
+|---|---|---|---|---|---|
+| Oct 2026 | 0 | 0 | 26,000 | −26,000 | 154,000 |
+| Nov | 0 | 30,750 | 27,500 | −58,250 | 95,750 |
+| Dec | 0 | 30,750 | 17,000 | −47,750 | 48,000 |
+| Jan 2027 | 13,800 | 0 | 17,500 | −3,700 | 44,300 |
+| Feb | 27,600 | 0 | 25,500 | 2,100 | 46,400 |
+| Mar | 0 | 0 | 14,500 | −14,500 | 31,900 |
+| Apr | 0 | 0 | 11,000 | −11,000 | 20,900 |
+| May | 0 | 0 | 7,000 | −7,000 | 13,900 |
+| Jun | 0 | 0 | 1,000 | −1,000 | 12,900 |
+| Jul | 0 | 0 | 1,000 | −1,000 | 11,900 |
+| Aug | 0 | 0 | 1,000 | −1,000 | 10,900 |
+| Sep | 0 | 0 | 1,000 | −1,000 | **9,900** |
+| **Total** | **41,400** | **61,500** | **150,000** | **−170,100** | **9,900** |
 
-*Y1 net margin inflated by unpaid founder labor. Imputed salary (P12k/mo x 3 x 4 active mo = P144k) would yield adjusted net of P48,590.*
+**Year-1 fixed costs (₱150,000):**
 
-### Year 2 — Quarterly (Regional Expansion)
+| Category | Amount | Timing |
+|---|---|---|
+| Prototyping and jigs | 11,500 | Oct–Nov |
+| Lab and partner QC | 18,500 | Oct–Apr |
+| Field logistics (Victoria ↔ San Jose) | 35,000 | Oct–Apr |
+| Temp/RH loggers, field tools | 6,000 | Nov |
+| Field day and marketing | 18,000 | Jan–May (Feb field day ₱10,000) |
+| Regulatory, IP, DTI registration | 11,000 | Oct–Nov, Apr–May |
+| Communications and team field allowance | 20,000 | Monthly |
+| Lure samples and import/customs fees | 10,000 | Oct–Nov |
+| Contingency | 20,000 | Dec–Mar |
 
-| Qtr | Units | Cumul Active | HW Rev | Lure Rev | Total Rev | COGS | OpEx | Net |
-|-----|-------|-------------|--------|----------|-----------|------|------|-----|
-| Q1 | 80 | 180 | 240,000 | 18,000 | 258,000 | 118,000 | 60,000 | 80,000 |
-| Q2 | 120 | 300 | 360,000 | 30,000 | 390,000 | 177,000 | 75,000 | 138,000 |
-| Q3 | 150 | 450 | 450,000 | 45,000 | 495,000 | 221,250 | 85,000 | 188,750 |
-| Q4 | 150 | 600 | 450,000 | 60,000 | 510,000 | 221,250 | 85,000 | 203,750 |
-| **Y2** | **500** | **600** | **1,500,000** | **153,000** | **1,653,000** | **737,500** | **305,000** | **610,500** |
-
-OpEx: 1 part-time assembler (P8k/mo), marketing P5k/mo, logistics P5k/mo, SMS, lure imports.
-
-### Year 3 — Quarterly (National Rollout Begins)
-
-| Qtr | Units | Cumul Active | HW Rev | Lure Rev | Total Rev | COGS | OpEx | Net |
-|-----|-------|-------------|--------|----------|-----------|------|------|-----|
-| Q1 | 300 | 900 | 840,000 | 90,000 | 930,000 | 339,900 | 150,000 | 440,100 |
-| Q2 | 400 | 1,300 | 1,120,000 | 130,000 | 1,250,000 | 453,200 | 175,000 | 621,800 |
-| Q3 | 400 | 1,700 | 1,120,000 | 170,000 | 1,290,000 | 453,200 | 175,000 | 661,800 |
-| Q4 | 400 | 2,100 | 1,120,000 | 210,000 | 1,330,000 | 453,200 | 200,000 | 676,800 |
-| **Y3** | **1,500** | **2,100** | **4,200,000** | **600,000** | **4,800,000** | **1,699,500** | **700,000** | **2,400,500** |
-
-Unit cost at P1,133 (500+ scale). Price adjusted to P2,800 (coop volume discount).
-
-### 3-Year Summary
-
-| | Year 1 | Year 2 | Year 3 | Total |
-|---|--------|--------|--------|-------|
-| Units Sold | 100 | 500 | 1,500 | 2,100 |
-| Hardware Revenue | 300,000 | 1,500,000 | 4,200,000 | 6,000,000 |
-| Lure Revenue | 19,500 | 153,000 | 600,000 | 772,500 |
-| **Total Revenue** | **319,500** | **1,653,000** | **4,800,000** | **6,772,500** |
-| COGS | 78,910 | 737,500 | 1,699,500 | 2,515,910 |
-| OpEx | 48,000 | 305,000 | 700,000 | 1,053,000 |
-| **Net Income** | **192,590** | **610,500** | **2,400,500** | **3,203,590** |
+**If there are no Year-1 hardware sales:** cash would go to −₱31,500. Mitigations:
+- (a) Build only the 40 demo units (saves ~₱36,900 in COGS).
+- (b) Secure LGU in-kind transport.
+- (c) Raise a ₱30k top-up (competition prize or MinSU fund).
 
 ---
 
-## 3. BREAK-EVEN ANALYSIS
+## 3. THREE-YEAR PROJECTION (base case)
 
-### Monthly Fixed Costs (Post-Launch)
+**Volume drivers:**
 
-| Item | Monthly (P) |
-|------|------------|
-| Lure inventory holding | 2,000 |
-| Transport/logistics | 3,000 |
-| Marketing materials | 2,000 |
-| Miscellaneous | 1,000 |
-| **Total Fixed** | **P8,000/month** |
+| | Year 1 (2026–27) | Year 2 (2027–28) | Year 3 (2028–29) |
+|---|---|---|---|
+| New hectares | 25 (10 demo free) | 150 | 500 |
+| Stations built | 100 | 600 | 2,000 |
+| Stations sold | 60 (hardware only) | 600 | 2,000 |
+| Kits built/sold | 100 / **0** (demo materials, not sold) | 680 / 680 (600 new + 80 returning) | 2,544 / 2,544 (2,000 new + 544 returning) |
+| Cartridges produced | 600 | 4,080 | 15,264 |
+| Dry conidia needed (2 g each) | 1.2 kg | 8.2 kg | 30.5 kg |
+| Rice substrate (at ~30 g conidia/kg; assumption) | ~40 kg | ~270 kg | ~1,020 kg |
+| Lures | 300 | 2,040 | 7,632 |
 
-### Contribution per Unit
+**Profit and loss:**
 
-| | Revenue | Variable Cost | Contribution |
-|---|---------|--------------|-------------|
-| Device | P3,000 | P1,475 | P1,525 |
-| Lure (x4/year) | P400 | P180 | P220 |
+| | Year 1 | Year 2 | Year 3 |
+|---|---|---|---|
+| Station revenue | 41,400 | 414,000 | 1,380,000 |
+| Kit revenue | 0 | 353,600 | 1,322,880 |
+| **Total revenue** | **41,400** | **767,600** | **2,702,880** |
+| Station COGS | 28,500 | 171,000 | 570,000 |
+| Kit COGS | 33,000 | 224,400 | 839,520 |
+| **Gross profit** | **−20,100** | **372,200** (48.5%) | **1,293,360** (47.9%) |
+| Fixed costs | 150,000 | 420,000 | 900,000 |
+| **Net income** | **−170,100** | **−47,800** | **+393,360** |
+| Cumulative | −170,100 | −217,900 | **+175,460** |
 
-### Break-Even Point
+**Year-2 fixed costs (₱420,000):**
+- 2 part-time staff (production technician, field/sales) at ₱10,000/month each: ₱240,000
+- Lab space and utilities: ₱48,000
+- Transport and logistics: ₱60,000
+- Marketing and field days: ₱30,000
+- FPA biorational dossier preparation: ₱30,000
+- Admin, permits, accounting: ₱12,000
 
-Startup investment: P78,910 (COGS) + P48,000 (OpEx months 1-9) = **P126,910**
+**Year-3 fixed costs (₱900,000):**
+- 2 full-time staff at ₱18,000/month: ₱432,000
+- 1 part-time staff: ₱120,000
+- Lab, storage and cold storage: ₱96,000
+- Transport: ₱96,000
+- Marketing: ₱60,000
+- FPA registration fees and testing: ₱60,000
+- Admin and accounting: ₱36,000
 
-Break-even units: P126,910 / P1,525 = **84 devices**
-
-At projected sales (30-35/month from month 10): **break-even in Month 12.**
-
----
-
-## 4. STARTUP COSTS AND FUNDING
-
-### Phase 1: Prototype + Pilot (Months 1-8)
-
-| Item | Cost (P) |
-|------|----------|
-| 2 prototypes | 3,960 |
-| Lures for pilot (20) | 2,000 |
-| SIM cards + load (4 months) | 1,200 |
-| Transport to farms | 6,000 |
-| Printing | 1,500 |
-| Misc | 1,340 |
-| **Subtotal** | **P16,000** |
-
-### Phase 2: First Production (Month 9)
-
-| Item | Cost (P) |
-|------|----------|
-| 100 units (P1,475 x 100) | 147,500 |
-| Lure inventory (500 lures) | 22,500 |
-| Packaging + labels | 5,000 |
-| Marketing | 10,000 |
-| Working capital buffer | 15,000 |
-| **Subtotal** | **P200,000** |
-
-### **Total Funding Need: P216,000**
+*Taxes are not modeled. A BMBE-registered micro-enterprise (Barangay Micro Business Enterprise, under RA 9178) is exempt from income tax. Confirm eligibility.*
 
 ---
 
-## 5. FUNDING SOURCES
+## 4. BREAK-EVEN
 
-### A. DOST-SETUP
-- Up to P500,000 for tech-based startups
-- Apply through DOST Region IV-B (MIMAROPA)
-- 2-4 month process
-- Strong fit: IoT agricultural device
-
-### B. DOST-PCIEERD
-- P200,000-2,000,000 for R&D
-- Apply through MinSU research office
-- Annual calls, 3-6 month review
-- Excellent fit: IoT + agriculture + pest management
-
-### C. DA-BAR (Bureau of Agricultural Research)
-- P100,000-1,000,000+ for agri-tech R&D
-- Submit through university or regional DA
-- Quarterly calls
-- Direct fit: pest management for priority crop
-
-### D. Competitions
-
-| Program | Prize Range (P) | Notes |
-|---------|----------------|-------|
-| MinSU Technopreneurship Fair | 5,000-20,000 | Your class may have this |
-| DOST-TAPI Invention Contest | 50,000-200,000 | Agriculture category |
-| Go Negosyo ASEAN Youth | 100,000+ | Young entrepreneur program |
-| IdeaSpace | 500,000-1,000,000 | Major PH accelerator (equity) |
-| Villgro Philippines | Incubation + funding | Social enterprise, agri focus |
-| QBO Innovation Hub | Mentoring + network | Accepts provincial startups |
-
-### E. Pre-Sales
-- P2,500 early-bird price, P500 deposit
-- 20 pre-orders from pilot farmers/network = P50,000 working capital
+- **Contribution per new hectare** (4 Stations + 4 Kits): 4 × ₱595 = **₱2,380**
+- **Contribution per returning hectare** (4 Kits): 4 × ₱190 = **₱760**
+- **Year-3 fixed costs ₱900,000:** break-even ≈ **378 new hectares** a year (with no returning customers), or fewer with returning ones.
+- **Year-2 fixed costs ₱420,000:** break-even ≈ 176 new ha; the plan has 150 new + 20 returning, which is why Year 2 is slightly negative.
+- **Cumulative payback:** during Year 3.
 
 ---
 
-## 6. SENSITIVITY ANALYSIS
+## 5. SENSITIVITY (Year-3 net income)
 
-### A: Price Sensitivity
+| Scenario | Revenue | Net income | Reading |
+|---|---|---|---|
+| Base | ₱2,702,880 | **₱393,360** | — |
+| Prices −20% (Station ₱552, Kit ₱416) | ₱2,162,304 | −₱147,216 | Don't discount; sell value |
+| Volume −30% | ₱1,892,120 | ₱5,390 | Survives, barely |
+| Volume +50% (one LGU bulk order) | ₱4,054,320 | ₱1,040,040 | B2G is the upside lever |
+| Lure landed cost ×2 (₱120) | ₱2,702,880 | −₱64,560 | Lure cost is critical |
+| **US-retail lure (₱215)** | ₱2,702,880 | **−₱789,600** | **Never buy retail US lures at scale** |
+| Cartridge cost ×2 (₱40) | ₱2,702,880 | ₱88,080 | Tolerable |
+| Volume −30% AND lure ×2 | ₱1,892,120 | −₱315,190 | Worst plausible case |
 
-| Price | Margin/Unit | Break-Even | Y1 Net | Y3 Net |
-|-------|-------------|-----------|--------|--------|
-| P3,500 | P2,025 (58%) | 63 units | 242,590 | 2,950,500 |
-| **P3,000** | **P1,525 (51%)** | **84** | **192,590** | **2,400,500** |
-| P2,500 | P1,025 (41%) | 124 | 142,590 | 1,262,500 |
-| P2,000 | P525 (26%) | 242 | 67,590 | 412,500 |
+**Kit price needed if lures can only be bought at ₱215:** even at ₱760/Kit, Year 3 is −₱179,040. The model **needs Asian-sourced lures or a local distributor price ≤ ₱100**.
 
-Below P2,000 = not sustainable.
-
-### B: Sales Volume Sensitivity
-
-| Pace | Y1 Units | Y1 Net | Break-Even Month |
-|------|----------|--------|-----------------|
-| 1.5x (fast) | 150 | 317,840 | 11 |
-| **1x (base)** | **100** | **192,590** | **12** |
-| 0.5x (slow) | 50 | 32,840 | 15 |
-| 0.25x (very slow) | 25 | -47,035 | 20 |
-
-Half-pace still profitable Y1. Quarter-pace needs bridge funding.
-
-### C: Component Cost Increase
-
-| BOM Change | Unit Cost | Margin at P3,000 | Break-Even |
-|-----------|-----------|-------------------|-----------|
-| Base | P1,475 | 51% | 84 |
-| +20% | P1,770 | 41% | 104 |
-| +50% | P2,213 | 26% | 162 |
-| +100% | P2,950 | 2% | 2,538 |
-
-Can absorb 20% increase. At 50%, raise price to P3,500.
-
-### D: Lure Supply Disruption
-
-| Situation | Mitigation |
-|-----------|-----------|
-| India delays 2-4 weeks | Keep 2-month buffer inventory |
-| Import cost doubles | Raise lure price to P150 (still cheap vs pesticide) |
-| Import blocked | Partner UPLB/DA for local synthesis |
-
-### E: 3-Year Scenario Range
-
-| | Worst | Base | Best |
-|---|-------|------|------|
-| Y1 units | 25 | 100 | 200 |
-| Y3 cumulative | 500 | 2,100 | 5,000 |
-| Y3 revenue | 800,000 | 4,800,000 | 12,000,000 |
-| 3-year net | 250,000 | 3,203,590 | 9,500,000 |
-
-**Even worst case: viable small business. Best case: real company.**
+**Levers, in order of power:**
+1. Lure cost.
+2. Institutional volume.
+3. Price discipline.
+4. Cartridge cost.
 
 ---
 
-## 7. KEY ASSUMPTIONS
+## 6. FUNDING AND SOURCES
 
-| # | Assumption | Value | Basis |
-|---|-----------|-------|-------|
-| 1 | Price | P3,000 (Y1-2), P2,800 (Y3) | Interview WTP target |
-| 2 | BOM at scale | P1,475 (50+), P1,133 (500+) | Component pricing research |
-| 3 | Lures/unit/year | 4 | 30-45 day lifespan, 2 seasons |
-| 4 | Lure cost | P45 each | IndiaMART bulk |
-| 5 | Monthly OpEx post-launch | P8,000 | Transport, marketing, SIM |
-| 6 | Failure/return rate | 5% | Industry average |
-| 7 | Lure repurchase rate | 80% Y2, 70% Y3 | Conservative |
-| 8 | Founder salary Y1 | P0 | Student sweat equity |
-| 9 | Assembly labor | P100-150/unit | Local, manual |
-| 10 | SMS cost | P0.50/alert | Globe/Smart standard |
+| Stage | Need | Source |
+|---|---|---|
+| Year 1 pilot | ₱180,000 | Class or MinSU funds; business plan competitions; LGU in-kind (transport, farmer mobilization) |
+| Year 2 working capital | ~₱100,000 buffer (cumulative low −₱217,900 before pre-order deposits) | Pre-order deposits (₱200/Station), LGU purchase orders, DOST-TAPI TECHNiCOM [R31] |
+| Year 2–3 scale-up (lab, cold storage, registration) | ₱1–5 M | **DOST-TAPI TECHNiCOM (≤₱5 M; academic institutions eligible)**; CHED-DOST ATBI (₱5 M, if MinSU has an incubator); DOST-PCAARRD Startup Grant Fund (≤₱5 M; needs a startup operating 1–5 years) [R31] |
+
+---
+
+## 7. MARKET VALUE CHECK (top-down)
+
+| Area | Hectares | Stations (4/ha) | One-time device value | Kit value per season |
+|---|---|---|---|---|
+| San Jose, Occ. Mindoro | 3,285 [R19] | 13,140 | ₱9.07 M | ₱6.83 M |
+| Occidental Mindoro | 8,637 [R18] | 34,548 | ₱23.84 M | ₱17.96 M |
+| Bongabon, Nueva Ecija | ~4,589 | 18,356 | ₱12.67 M | ₱9.55 M |
+| Nueva Ecija | ~11,500 [R36] | 46,000 | ₱31.74 M | ₱23.92 M |
+
+Year-3 plan = ~636 ha in service = **7.4% of Occidental Mindoro**.
+
+---
+
+## 8. KEY ASSUMPTIONS (change these first when real data arrives)
+
+| # | Assumption | Value | Confidence | How to firm it up |
+|---|---|---|---|---|
+| 1 | Stations per hectare | 4 | LOW | Demo: 2 vs 4/ha |
+| 2 | Station price | ₱690 | MEDIUM | Interview price ladder (`phase6`) |
+| 3 | Season Kit price | ₱520 | MEDIUM | Same |
+| 4 | Lure landed cost | ₱60 | **LOW** | 2 supplier quotes (India + Verca) |
+| 5 | Lures per season | 3 (4-week life) | MEDIUM | Vendor data [R23]; heat may shorten it |
+| 6 | Cartridges per season | 6 (14-day swap) | MEDIUM | Field germination test (`phase5` §7.2) |
+| 7 | Conidia per cartridge | 2 g | LOW | Bench pickup test |
+| 8 | Conidia yield | 30 g/kg rice | LOW | First production batches |
+| 9 | Retention season to season | 80% | LOW | Pre-order sheet after the demo |
+| 10 | Onion yield / price | 9.06 t/ha; ₱30/kg | MEDIUM | MAO data for San Jose |
+| 11 | Year-3 new hectares | 500 | LOW | Depends on the demo and an LGU order |
+| 12 | Labor cost | ₱120/h | MEDIUM | — |

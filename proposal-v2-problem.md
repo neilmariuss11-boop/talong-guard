@@ -1,3 +1,5 @@
+> **⚠️ SUPERSEDED (2026-09-27).** This is the eggplant-era problem statement, kept for history only. The current proposal is `proposal.md` (onion armyworm autodissemination Station), and the evidence is in `research-synthesis.md`.
+
 # TalongGuard v2 — Proposal (Problem & Gap Analysis)
 ### Research-Grounded Foundation
 **Draft Date:** 2026-09-15
