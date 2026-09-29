@@ -176,8 +176,8 @@ COLOR = dict(wing_dark=PAL["green"], wing_lt=PAL["green_lt"], bulb_dark=PAL["vio
              bulb_lt=PAL["violet_lt"], spore=PAL["cream"], head=PAL["green"])
 MONO = dict(wing_dark=PAL["ink"], wing_lt=PAL["ink"], bulb_dark=PAL["ink"],
             bulb_lt=PAL["ink"], spore=PAL["cream"], head=PAL["ink"])
-REVERSED = dict(wing_dark=PAL["cream"], wing_lt="#CFE0D3", bulb_dark="#E4CBD8",
-                bulb_lt=PAL["cream"], spore=PAL["green"], head=PAL["cream"],
+REVERSED = dict(wing_dark=PAL["cream"], wing_lt="#CFE0D3", bulb_dark="#7C2A5B",
+                bulb_lt="#A63E7C", spore=PAL["green"], head=PAL["cream"],
                 shadow=darken(PAL["green"], 0.12))   # long-shadow tone on field green
 
 # mark bounding box on the 512 grid (for lockups)

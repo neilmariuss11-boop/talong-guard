@@ -43,6 +43,7 @@ renders a quick mark-only preview. Geometry constants are at the top of the scri
 | Leaf green | `#3E8C5C` | Wing lit half |
 | Onion violet | `#6B2150` | Bulb shadow |
 | Onion violet light | `#943468` | Bulb lit crescent |
+| Onion violet on green | `#7C2A5B` / `#A63E7C` | Bulb on reversed and badge, a step brighter for contrast |
 | Cream | `#F6F3EC` | Background, spores |
 | Ink | `#15201A` | One-colour print |
 
