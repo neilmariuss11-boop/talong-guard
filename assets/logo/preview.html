@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Logo Symbol Preview</title>
+<style>
+  :root { --bg: #E4DFD3; --card: #F7F4EC; --green: #1B5236; --text: #16241C; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.5 system-ui, sans-serif; padding: 24px 16px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p { margin: 0 0 20px; max-width: 640px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  figure { margin: 0; background: var(--card); border-radius: 12px; padding: 12px; }
+  figure.dark { background: var(--green); color: #F7F4EC; }
+  figure svg { width: 100%; height: auto; display: block; }
+  figcaption { font-size: 13px; margin-top: 6px; }
+  .small { display: flex; gap: 16px; align-items: end; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Logo symbol, concept C refined</h1>
+<p>Onion bulb whose leaves are harabas moth wings. Depth comes from two-tone wings split along the midrib,
+a shaded bulb with cut-out skin lines, and a thin gap between wings and bulb. Name is on hold.</p>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gw" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3C8A5A"/><stop offset="1" stop-color="#1B5236"/>
+    </linearGradient>
+    <radialGradient id="gb" cx="0.62" cy="0.42" r="0.75">
+      <stop offset="0" stop-color="#8A2D5C"/><stop offset="1" stop-color="#5E1B40"/>
+    </radialGradient>
+    <!-- left wing parts -->
+    <path id="wing" d="M 248 232 C 236 190, 170 120, 82 92 C 110 190, 190 250, 250 244 Z"/>
+    <path id="wingU" d="M 248 232 C 236 190, 170 120, 82 92 C 140 140, 200 196, 248 232 Z"/>
+    <path id="wingL" d="M 82 92 C 110 190, 190 250, 250 244 L 248 232 C 200 196, 140 140, 82 92 Z"/>
+    <path id="ant" d="M 250 186 C 244 160, 232 138, 212 118 C 226 128, 244 150, 256 184 Z"/>
+    <path id="bulb" d="M 256 206 C 262 238, 290 256, 318 276 C 346 296, 352 326, 348 350 C 342 392, 302 420, 256 422 C 210 420, 170 392, 164 350 C 160 326, 166 296, 194 276 C 222 256, 250 238, 256 206 Z"/>
+    <path id="bulbL" d="M 256 206 C 250 238, 222 256, 194 276 C 166 296, 160 326, 164 350 C 170 392, 210 420, 256 422 Z"/>
+    <path id="skin" d="M 254 244 C 222 280, 212 360, 242 412 M 256 236 L 256 414 M 258 244 C 290 280, 300 360, 270 412"/>
+    <path id="roots" d="M 244 421 Q 238 436 230 446 M 256 423 L 256 452 M 268 421 Q 274 436 282 446"/>
+
+    <!-- tonal colour mark -->
+    <g id="mark-color">
+      <use href="#roots" stroke="#5E1B40" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <use href="#bulb" fill="#8A2D5C"/><use href="#bulbL" fill="#5E1B40"/>
+      <use href="#skin" stroke="#F7F4EC" stroke-width="5" stroke-linecap="round" fill="none" opacity=".9"/>
+      <g id="wc">
+        <use href="#wing" fill="#F7F4EC" stroke="#F7F4EC" stroke-width="12" stroke-linejoin="round"/>
+        <use href="#wingL" fill="#3C8A5A"/><use href="#wingU" fill="#1B5236"/>
+        <circle cx="168" cy="198" r="9" fill="#F7F4EC"/>
+        <use href="#ant" fill="#1B5236"/>
+      </g>
+      <use href="#wc" transform="translate(512,0) scale(-1,1)"/>
+      <circle cx="256" cy="194" r="11" fill="#1B5236"/>
+    </g>
+
+    <!-- gradient mark (screens only) -->
+    <g id="mark-grad">
+      <use href="#roots" stroke="#5E1B40" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <use href="#bulb" fill="url(#gb)"/>
+      <use href="#skin" stroke="#F7F4EC" stroke-width="5" stroke-linecap="round" fill="none" opacity=".9"/>
+      <g id="wg">
+        <use href="#wing" fill="#F7F4EC" stroke="#F7F4EC" stroke-width="12" stroke-linejoin="round"/>
+        <use href="#wing" fill="url(#gw)"/>
+        <circle cx="168" cy="198" r="9" fill="#F7F4EC"/>
+        <use href="#ant" fill="#1B5236"/>
+      </g>
+      <use href="#wg" transform="translate(512,0) scale(-1,1)"/>
+      <circle cx="256" cy="194" r="11" fill="#1B5236"/>
+    </g>
+
+    <!-- one-colour mark -->
+    <g id="mark-mono">
+      <use href="#roots" stroke="#16241C" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <use href="#bulb" fill="#16241C"/>
+      <use href="#skin" stroke="#F7F4EC" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g id="wm">
+        <use href="#wing" fill="#16241C" stroke="#F7F4EC" stroke-width="12" stroke-linejoin="round" paint-order="stroke"/>
+        <circle cx="168" cy="198" r="9" fill="#F7F4EC"/>
+        <use href="#ant" fill="#16241C"/>
+      </g>
+      <use href="#wm" transform="translate(512,0) scale(-1,1)"/>
+      <circle cx="256" cy="194" r="11" fill="#16241C"/>
+    </g>
+
+    <!-- reversed mark, for green backgrounds -->
+    <g id="mark-rev">
+      <use href="#roots" stroke="#E9D3DE" stroke-width="6" stroke-linecap="round" fill="none"/>
+      <use href="#bulb" fill="#F7F4EC"/><use href="#bulbL" fill="#E9D3DE"/>
+      <use href="#skin" stroke="#1B5236" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g id="wr">
+        <use href="#wing" fill="#1B5236" stroke="#1B5236" stroke-width="12" stroke-linejoin="round"/>
+        <use href="#wingL" fill="#DCE9DF"/><use href="#wingU" fill="#F7F4EC"/>
+        <circle cx="168" cy="198" r="9" fill="#1B5236"/>
+        <use href="#ant" fill="#F7F4EC"/>
+      </g>
+      <use href="#wr" transform="translate(512,0) scale(-1,1)"/>
+      <circle cx="256" cy="194" r="11" fill="#F7F4EC"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="grid">
+  <figure>
+    <svg viewBox="0 0 512 512"><g transform="translate(0 -14)"><use href="#mark-color"/></g></svg>
+    <figcaption>Primary, tonal flat colour. Prints cleanly.</figcaption>
+    <div class="small">
+      <svg viewBox="0 0 512 512" width="64"><g transform="translate(0 -14)"><use href="#mark-color"/></g></svg>
+      <svg viewBox="0 0 512 512" width="32"><g transform="translate(0 -14)"><use href="#mark-color"/></g></svg>
+      <svg viewBox="0 0 512 512" width="16"><g transform="translate(0 -14)"><use href="#mark-color"/></g></svg>
+    </div>
+  </figure>
+  <figure>
+    <svg viewBox="0 0 512 512"><g transform="translate(0 -14)"><use href="#mark-grad"/></g></svg>
+    <figcaption>Gradient, for screens and slides only.</figcaption>
+  </figure>
+  <figure>
+    <svg viewBox="0 0 512 512"><g transform="translate(0 -14)"><use href="#mark-mono"/></g></svg>
+    <figcaption>One colour. Stamps, stencil on the hood.</figcaption>
+  </figure>
+  <figure class="dark">
+    <svg viewBox="0 0 512 512"><g transform="translate(0 -14)"><use href="#mark-rev"/></g></svg>
+    <figcaption>Reversed, on field green.</figcaption>
+  </figure>
+  <figure>
+    <svg viewBox="0 0 512 512">
+      <circle cx="256" cy="256" r="246" fill="#1B5236"/>
+      <g transform="translate(256 266) scale(.8) translate(-256 -266) translate(0 -14)"><use href="#mark-rev"/></g>
+    </svg>
+    <figcaption>Badge. App icon, sticker, favicon.</figcaption>
+  </figure>
+</div>
+</body>
+</html>
