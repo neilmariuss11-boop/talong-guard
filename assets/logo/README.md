@@ -6,9 +6,12 @@ product or mark using the word. IPOPHL and WIPO database searches are still to d
 
 **Mark.** An onion bulb whose leaves are moth wings. The pheromone draws the moth
 in, and each wing carries a trail of three spores toward its tip, the spores riding
-out. Reads as crop and pest at once. Depth is done the way current marks do it: soft
-tonal gradients on the bulb and wings, a faint cast shadow where the wings meet
-the bulb, and a small highlight on the bulb shoulder. No drop shadows, no bevels.
+out. Reads as crop and pest at once. Depth is done in two restrained ways: soft tonal
+gradients on the bulb, the wings and the green surfaces, and flat hard-edged
+shadows in a tone only slightly darker than what they fall on. The wings cast a
+flat shadow onto the bulb, and on green surfaces the whole mark casts a flat
+long shadow down-right at 45 degrees, to the rim on the badge. No soft drop
+shadows, no bevels, no highlights.
 `-flat` versions carry the same two-tone shapes with no gradients for stencils,
 embroidery and cheap print. `-mono` is a single colour.
 

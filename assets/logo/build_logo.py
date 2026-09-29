@@ -83,14 +83,16 @@ def darken(h, t):
     return mix(h, "#000000", t)
 
 
-def mark(c, bg=None, depth=True, ground=False):
+def mark(c, bg=None, depth=True, ground=False, shadow_len=0):
     """c: colours for wing_dark, wing_lt, bulb_dark, bulb_lt, spore, head.
 
-    depth=True adds restrained tonal gradients, a faint cast shadow where the
-    wings meet the bulb, and a soft highlight on the bulb. depth=False is the
-    flat version for one-colour print and stencils. ground=True adds a soft
-    shadow under the bulb for dark panels. The wing-to-bulb gap is cut with a
-    mask, so the mark sits on any background, gradient included.
+    depth=True adds restrained tonal gradients and a flat, hard-edged cast
+    shadow where the wings meet the bulb. depth=False is the flat version for
+    one-colour print and stencils. shadow_len>0 draws a flat "long shadow":
+    the mark's silhouette repeated down-right at 45 degrees for that many
+    units, in a tone only slightly darker than the background (c["shadow"]).
+    The wing-to-bulb gap is cut with a mask, so the mark sits on any
+    background, gradient included.
     """
     if depth:
         # wings: a touch lighter at the base, darker toward the apex
@@ -119,29 +121,36 @@ def mark(c, bg=None, depth=True, ground=False):
             '<stop offset="0" stop-color="#FFF" stop-opacity="0.16"/>'
             '<stop offset="1" stop-color="#FFF" stop-opacity="0"/></radialGradient>'
             '<clipPath id="cB"><path d="' + BULB + '"/></clipPath>'
-            # ground shadow under the bulb (dark panels only)
-            '<radialGradient id="gG" cx="0.5" cy="0.5" r="0.5">'
-            '<stop offset="0" stop-color="#000" stop-opacity="0.28"/>'
-            '<stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>'
         )
         wing_dark, wing_lt = "url(#gWd)", "url(#gWl)"
         bulb_dark, bulb_lt = "url(#gB)", "url(#gBl)"
-        extras = (f'<g clip-path="url(#cB)">'
-                  f'<rect x="150" y="236" width="212" height="120" fill="url(#gS)"/>'
-                  f'<path d="{BULB}" fill="url(#gH)"/></g>')
+        # flat cast shadow: the wings' silhouette shifted down-right, clipped to the bulb
+        extras = ('<g clip-path="url(#cB)">'
+                  '<use href="#silW" transform="translate(12 16)" fill="#000" fill-opacity="0.16"/>'
+                  '</g>')
         head_fill = f'{darken(c["head"], 0.04)}'
     else:
         defs, extras = "<defs>", ""
         wing_dark, wing_lt = c["wing_dark"], c["wing_lt"]
         bulb_dark, bulb_lt = c["bulb_dark"], c["bulb_lt"]
         head_fill = c["head"]
+    hx, hy, hr = HEAD
+    # silhouettes (no fill set, so <use> can colour them)
+    defs += (f'<g id="silW">{both(f"<path d={chr(34)}{WING}{chr(34)} stroke-width={chr(34)}5{chr(34)} stroke-linejoin={chr(34)}round{chr(34)}/>")}</g>'
+             f'<g id="sil"><use href="#silW"/>{THORAX}<path d="{BULB}"/>'
+             f'<circle cx="{hx}" cy="{hy}" r="{hr}"/></g>')
     # mask that cuts a 5 px gap around the bulb out of the wings and thorax
     defs += ('<mask id="mW" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">'
              '<rect width="512" height="512" fill="#fff"/>'
              f'<path d="{BULB}" fill="#000" stroke="#000" stroke-width="10" stroke-linejoin="round"/>'
              '</mask></defs>')
-    shadow = ('<ellipse cx="256" cy="446" rx="118" ry="22" fill="url(#gG)"/>'
-              if (ground and depth) else "")
+    # flat long shadow: silhouette stepped down-right, one flat tone
+    shadow = ""
+    if shadow_len and depth:
+        col = c.get("shadow", "#000")
+        steps = "".join(f'<use href="#sil" transform="translate({k} {k})"/>'
+                        for k in range(2, int(shadow_len), 2))
+        shadow = f'<g fill="{col}" stroke="{col}">{steps}</g>'
 
     # wings first, with a soft self-stroke so the apex is rounded
     wing = (f'<path d="{WING}" fill="{wing_dark}" stroke="{c["wing_dark"]}" '
@@ -158,7 +167,6 @@ def mark(c, bg=None, depth=True, ground=False):
             'stroke-linecap="round" fill="none"/>'
             f'<path d="{BULB}" fill="{bulb_dark}"/>'
             f'<path d="{BULB_LIT}" fill="{bulb_lt}"/>')
-    hx, hy, hr = HEAD
     head = f'<circle cx="{hx}" cy="{hy}" r="{hr}" fill="{head_fill}"/>'
     return (defs + shadow + f'<g mask="url(#mW)">{both(wing)}{thorax}</g>'
             + bulb + extras + head)
@@ -169,7 +177,8 @@ COLOR = dict(wing_dark=PAL["green"], wing_lt=PAL["green_lt"], bulb_dark=PAL["vio
 MONO = dict(wing_dark=PAL["ink"], wing_lt=PAL["ink"], bulb_dark=PAL["ink"],
             bulb_lt=PAL["ink"], spore=PAL["cream"], head=PAL["ink"])
 REVERSED = dict(wing_dark=PAL["cream"], wing_lt="#CFE0D3", bulb_dark="#E4CBD8",
-                bulb_lt=PAL["cream"], spore=PAL["green"], head=PAL["cream"])
+                bulb_lt=PAL["cream"], spore=PAL["green"], head=PAL["cream"],
+                shadow=darken(PAL["green"], 0.12))   # long-shadow tone on field green
 
 # mark bounding box on the 512 grid (for lockups)
 MARK_BOX = (78, 88, 434, 462)   # x0, y0, x1, y1
@@ -269,7 +278,7 @@ def mark_doc(c, bg, size=512, pad=0, depth=True):
     tx = pad + (size - 2 * pad - mw * s) / 2 - x0 * s
     ty = pad + (size - 2 * pad - mh * s) / 2 - y0 * s
     ground = bg == PAL["green"]
-    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg, depth, ground)}</g>'
+    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg, depth, shadow_len=150 if ground else 0)}</g>'
     return svg_doc(size, size, body, bg, depth=depth)
 
 
@@ -288,7 +297,7 @@ def horizontal_doc(c, text_col, bg, depth=True):
     # wordmark baseline: centre the x-height band on the mark's vertical centre
     baseline = pad + mark_h / 2 + xh / 2 + 6
     ground = bg == PAL["green"]
-    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, ground)}</g>'
+    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, shadow_len=150 if ground else 0)}</g>'
             f'<g transform="translate({pad + mw + gap:.2f} {baseline:.2f})">{inner}</g>')
     return svg_doc(round(W), round(H), body, bg, depth=depth)
 
@@ -304,14 +313,14 @@ def stacked_doc(c, text_col, bg, depth=True):
     W = max(mw, ww) + 2 * pad
     H = pad + mark_h + gap + 100 + 28 + pad   # 28 for descender of p
     ground = bg == PAL["green"]
-    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, ground)}</g>'
+    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, shadow_len=150 if ground else 0)}</g>'
             f'<g transform="translate({(W - ww) / 2:.2f} {pad + mark_h + gap + 100:.2f})">{inner}</g>')
     return svg_doc(round(W), round(H), body, bg, depth=depth)
 
 
 def badge_doc(size=512):
     """Round icon: field-green disc lit softly from the upper centre, with the
-    reversed mark and a ground shadow under the bulb."""
+    reversed mark and a flat long shadow running to the rim."""
     g = PAL["green"]
     x0, y0, x1, y1 = MARK_BOX
     mw, mh = x1 - x0, y1 - y0
@@ -323,8 +332,9 @@ def badge_doc(size=512):
             f'<stop offset="0.55" stop-color="{g}"/>'
             f'<stop offset="1" stop-color="{darken(g, 0.24)}"/></radialGradient></defs>'
             f'<circle cx="{size/2}" cy="{size/2}" r="{size/2}" fill="url(#gD)"/>')
-    body = (disc + f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">'
-            f'{mark(REVERSED, g, True, ground=True)}</g>')
+    disc += f'<defs><clipPath id="cD"><circle cx="{size/2}" cy="{size/2}" r="{size/2}"/></clipPath></defs>'
+    body = (disc + f'<g clip-path="url(#cD)"><g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">'
+            f'{mark(REVERSED, g, True, shadow_len=700)}</g></g>')
     return svg_doc(size, size, body, None)
 
 
