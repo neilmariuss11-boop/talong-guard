@@ -25,6 +25,7 @@ Documentation-only (Markdown). No code, build system or tests.
 - `phase8-onion-pivot.md`: decision history (eggplant → onion monitoring → autodissemination)
 - `Business-Plan.md`: formal long-form business plan
 - `loop-roadmap.md`: phase tracker and next actions
+- `venture-board-description.md`: two-page project description for the venture board, drawn from `proposal.md`
 
 **Historical (eggplant era, kept for reference):** `proposal-v2-problem.md`, `idea-pool.md`, `idea-pool-v2.md`, `phase2-scoring.md`. The old eggplant versions of phases 3–7 and the business plan are in git history.
 
