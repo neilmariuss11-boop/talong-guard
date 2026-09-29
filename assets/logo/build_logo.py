@@ -83,12 +83,14 @@ def darken(h, t):
     return mix(h, "#000000", t)
 
 
-def mark(c, bg, depth=True):
+def mark(c, bg=None, depth=True, ground=False):
     """c: colours for wing_dark, wing_lt, bulb_dark, bulb_lt, spore, head.
 
     depth=True adds restrained tonal gradients, a faint cast shadow where the
     wings meet the bulb, and a soft highlight on the bulb. depth=False is the
-    flat version for one-colour print and stencils.
+    flat version for one-colour print and stencils. ground=True adds a soft
+    shadow under the bulb for dark panels. The wing-to-bulb gap is cut with a
+    mask, so the mark sits on any background, gradient included.
     """
     if depth:
         # wings: a touch lighter at the base, darker toward the apex
@@ -117,7 +119,10 @@ def mark(c, bg, depth=True):
             '<stop offset="0" stop-color="#FFF" stop-opacity="0.16"/>'
             '<stop offset="1" stop-color="#FFF" stop-opacity="0"/></radialGradient>'
             '<clipPath id="cB"><path d="' + BULB + '"/></clipPath>'
-            "</defs>"
+            # ground shadow under the bulb (dark panels only)
+            '<radialGradient id="gG" cx="0.5" cy="0.5" r="0.5">'
+            '<stop offset="0" stop-color="#000" stop-opacity="0.28"/>'
+            '<stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>'
         )
         wing_dark, wing_lt = "url(#gWd)", "url(#gWl)"
         bulb_dark, bulb_lt = "url(#gB)", "url(#gBl)"
@@ -126,10 +131,17 @@ def mark(c, bg, depth=True):
                   f'<path d="{BULB}" fill="url(#gH)"/></g>')
         head_fill = f'{darken(c["head"], 0.04)}'
     else:
-        defs, extras = "", ""
+        defs, extras = "<defs>", ""
         wing_dark, wing_lt = c["wing_dark"], c["wing_lt"]
         bulb_dark, bulb_lt = c["bulb_dark"], c["bulb_lt"]
         head_fill = c["head"]
+    # mask that cuts a 5 px gap around the bulb out of the wings and thorax
+    defs += ('<mask id="mW" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">'
+             '<rect width="512" height="512" fill="#fff"/>'
+             f'<path d="{BULB}" fill="#000" stroke="#000" stroke-width="10" stroke-linejoin="round"/>'
+             '</mask></defs>')
+    shadow = ('<ellipse cx="256" cy="446" rx="118" ry="22" fill="url(#gG)"/>'
+              if (ground and depth) else "")
 
     # wings first, with a soft self-stroke so the apex is rounded
     wing = (f'<path d="{WING}" fill="{wing_dark}" stroke="{c["wing_dark"]}" '
@@ -141,16 +153,15 @@ def mark(c, bg, depth=True):
             + f'<path d="{ANTENNA}" stroke="{c["head"]}" stroke-width="4.5" '
               'stroke-linecap="round" fill="none"/>')
     thorax = THORAX.replace("<rect", f'<rect fill="{head_fill}"')
-    # bulb in front, separated from the wings by a background-coloured stroke
+    # bulb in front; the gap around it is cut from the wings by the mask
     bulb = (f'<path d="{ROOTS}" stroke="{c["bulb_dark"]}" stroke-width="6" '
             'stroke-linecap="round" fill="none"/>'
-            f'<path d="{BULB}" fill="none" stroke="{bg}" stroke-width="10" '
-            'stroke-linejoin="round"/>'
             f'<path d="{BULB}" fill="{bulb_dark}"/>'
             f'<path d="{BULB_LIT}" fill="{bulb_lt}"/>')
     hx, hy, hr = HEAD
     head = f'<circle cx="{hx}" cy="{hy}" r="{hr}" fill="{head_fill}"/>'
-    return defs + both(wing) + thorax + bulb + extras + head
+    return (defs + shadow + f'<g mask="url(#mW)">{both(wing)}{thorax}</g>'
+            + bulb + extras + head)
 
 
 COLOR = dict(wing_dark=PAL["green"], wing_lt=PAL["green_lt"], bulb_dark=PAL["violet"],
@@ -231,11 +242,24 @@ def wordmark_svg(text, colour, weight=700, tracking=-0.01):
 
 
 # ------------------------------------------------------------------ lockups
-def svg_doc(w, h, body, bg=None, title="Pherospora"):
-    rect = f'<rect width="{w}" height="{h}" fill="{bg}"/>' if bg else ""
+def panel(w, h, bg, depth):
+    """Background rect. On the field green with depth, a soft diagonal light
+    from the upper left, darker toward the lower right."""
+    if not bg:
+        return ""
+    if depth and bg == PAL["green"]:
+        return ('<defs><linearGradient id="gP" x1="0" y1="0" x2="1" y2="1">'
+                f'<stop offset="0" stop-color="{lighten(bg, 0.08)}"/>'
+                f'<stop offset="0.5" stop-color="{bg}"/>'
+                f'<stop offset="1" stop-color="{darken(bg, 0.18)}"/></linearGradient></defs>'
+                f'<rect width="{w}" height="{h}" fill="url(#gP)"/>')
+    return f'<rect width="{w}" height="{h}" fill="{bg}"/>'
+
+
+def svg_doc(w, h, body, bg=None, title="Pherospora", depth=True):
     return ('<svg xmlns="http://www.w3.org/2000/svg" '
             f'viewBox="0 0 {w} {h}" width="{w}" height="{h}">'
-            f'<title>{title}</title>{rect}{body}</svg>\n')
+            f'<title>{title}</title>{panel(w, h, bg, depth)}{body}</svg>\n')
 
 
 def mark_doc(c, bg, size=512, pad=0, depth=True):
@@ -244,8 +268,9 @@ def mark_doc(c, bg, size=512, pad=0, depth=True):
     s = (size - 2 * pad) / max(mw, mh)
     tx = pad + (size - 2 * pad - mw * s) / 2 - x0 * s
     ty = pad + (size - 2 * pad - mh * s) / 2 - y0 * s
-    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg, depth)}</g>'
-    return svg_doc(size, size, body, bg)
+    ground = bg == PAL["green"]
+    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg, depth, ground)}</g>'
+    return svg_doc(size, size, body, bg, depth=depth)
 
 
 def horizontal_doc(c, text_col, bg, depth=True):
@@ -262,9 +287,10 @@ def horizontal_doc(c, text_col, bg, depth=True):
     H = mark_h + 2 * pad
     # wordmark baseline: centre the x-height band on the mark's vertical centre
     baseline = pad + mark_h / 2 + xh / 2 + 6
-    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth)}</g>'
+    ground = bg == PAL["green"]
+    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, ground)}</g>'
             f'<g transform="translate({pad + mw + gap:.2f} {baseline:.2f})">{inner}</g>')
-    return svg_doc(round(W), round(H), body, bg)
+    return svg_doc(round(W), round(H), body, bg, depth=depth)
 
 
 def stacked_doc(c, text_col, bg, depth=True):
@@ -277,17 +303,29 @@ def stacked_doc(c, text_col, bg, depth=True):
     gap = 44
     W = max(mw, ww) + 2 * pad
     H = pad + mark_h + gap + 100 + 28 + pad   # 28 for descender of p
-    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth)}</g>'
+    ground = bg == PAL["green"]
+    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, ground)}</g>'
             f'<g transform="translate({(W - ww) / 2:.2f} {pad + mark_h + gap + 100:.2f})">{inner}</g>')
-    return svg_doc(round(W), round(H), body, bg)
+    return svg_doc(round(W), round(H), body, bg, depth=depth)
 
 
 def badge_doc(size=512):
-    g, cream = PAL["green"], PAL["cream"]
-    body = (f'<circle cx="{size/2}" cy="{size/2}" r="{size/2}" fill="{g}"/>'
-            f'<g transform="translate({size*0.14:.1f} {size*0.14:.1f}) scale({size*0.72/512:.5f})">'
-            f'{mark_doc(REVERSED, g, 512)[mark_doc(REVERSED, g, 512).find("<g"):-7]}</g>')
-    return svg_doc(size, size, body)
+    """Round icon: field-green disc lit softly from the upper centre, with the
+    reversed mark and a ground shadow under the bulb."""
+    g = PAL["green"]
+    x0, y0, x1, y1 = MARK_BOX
+    mw, mh = x1 - x0, y1 - y0
+    s = size * 0.72 / max(mw, mh)
+    tx = (size - mw * s) / 2 - x0 * s
+    ty = (size - mh * s) / 2 - y0 * s
+    disc = ('<defs><radialGradient id="gD" cx="0.5" cy="0.32" r="0.8">'
+            f'<stop offset="0" stop-color="{lighten(g, 0.12)}"/>'
+            f'<stop offset="0.55" stop-color="{g}"/>'
+            f'<stop offset="1" stop-color="{darken(g, 0.24)}"/></radialGradient></defs>'
+            f'<circle cx="{size/2}" cy="{size/2}" r="{size/2}" fill="url(#gD)"/>')
+    body = (disc + f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">'
+            f'{mark(REVERSED, g, True, ground=True)}</g>')
+    return svg_doc(size, size, body, None)
 
 
 def variants():
@@ -392,8 +430,8 @@ def export(mark_only=False):
     for n in order:
         s, bg = v[n]
         im = png(s, 900 if "horizontal" in n else 420)
-        tile = Image.new("RGB", (im.width + 40, im.height + 40), bg)
-        tile.paste(im, (20, 20), im)
+        tile = Image.new("RGB", (im.width, im.height), bg)
+        tile.paste(im, (0, 0), im)
         tiles.append(tile)
     gap = 28
     row1 = tiles[:2]
