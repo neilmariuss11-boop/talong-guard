@@ -20,8 +20,11 @@ FONT = OUT / "fonts" / "Manrope[wght].ttf"
 
 # ------------------------------------------------------------------ palette
 PAL = {
-    "green": "#1E5A3C",     # wing dark half, wordmark
-    "green_lt": "#3E8C5C",  # wing lit half
+    "green": "#1E5A3C",     # wing dark half, wordmark (on cream)
+    "green_lt": "#3E8C5C",  # wing lit half (on cream)
+    "field": "#17452F",     # deep field green: reversed panels and badge
+    "leaf": "#3F9463",      # wing dark half on field green
+    "leaf_lt": "#74C08E",   # wing lit half, head and antennae on field green
     "violet": "#6B2150",    # bulb shadow side
     "violet_lt": "#943468", # bulb lit side
     "cream": "#F6F3EC",
@@ -176,9 +179,9 @@ COLOR = dict(wing_dark=PAL["green"], wing_lt=PAL["green_lt"], bulb_dark=PAL["vio
              bulb_lt=PAL["violet_lt"], spore=PAL["cream"], head=PAL["green"])
 MONO = dict(wing_dark=PAL["ink"], wing_lt=PAL["ink"], bulb_dark=PAL["ink"],
             bulb_lt=PAL["ink"], spore=PAL["cream"], head=PAL["ink"])
-REVERSED = dict(wing_dark=PAL["cream"], wing_lt="#CFE0D3", bulb_dark="#7C2A5B",
-                bulb_lt="#A63E7C", spore=PAL["green"], head=PAL["cream"],
-                shadow=darken(PAL["green"], 0.12))   # long-shadow tone on field green
+REVERSED = dict(wing_dark=PAL["leaf"], wing_lt=PAL["leaf_lt"], bulb_dark="#7C2A5B",
+                bulb_lt="#A63E7C", spore=PAL["cream"], head=PAL["leaf_lt"],
+                shadow=darken(PAL["field"], 0.16))   # long-shadow tone on field green
 
 # mark bounding box on the 512 grid (for lockups)
 MARK_BOX = (78, 88, 434, 462)   # x0, y0, x1, y1
@@ -256,7 +259,7 @@ def panel(w, h, bg, depth):
     from the upper left, darker toward the lower right."""
     if not bg:
         return ""
-    if depth and bg == PAL["green"]:
+    if depth and bg == PAL["field"]:
         return ('<defs><linearGradient id="gP" x1="0" y1="0" x2="1" y2="1">'
                 f'<stop offset="0" stop-color="{lighten(bg, 0.08)}"/>'
                 f'<stop offset="0.5" stop-color="{bg}"/>'
@@ -277,7 +280,7 @@ def mark_doc(c, bg, size=512, pad=0, depth=True):
     s = (size - 2 * pad) / max(mw, mh)
     tx = pad + (size - 2 * pad - mw * s) / 2 - x0 * s
     ty = pad + (size - 2 * pad - mh * s) / 2 - y0 * s
-    ground = bg == PAL["green"]
+    ground = bg == PAL["field"]
     body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg, depth, shadow_len=150 if ground else 0)}</g>'
     return svg_doc(size, size, body, bg, depth=depth)
 
@@ -296,7 +299,7 @@ def horizontal_doc(c, text_col, bg, depth=True):
     H = mark_h + 2 * pad
     # wordmark baseline: centre the x-height band on the mark's vertical centre
     baseline = pad + mark_h / 2 + xh / 2 + 6
-    ground = bg == PAL["green"]
+    ground = bg == PAL["field"]
     body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, shadow_len=150 if ground else 0)}</g>'
             f'<g transform="translate({pad + mw + gap:.2f} {baseline:.2f})">{inner}</g>')
     return svg_doc(round(W), round(H), body, bg, depth=depth)
@@ -312,7 +315,7 @@ def stacked_doc(c, text_col, bg, depth=True):
     gap = 44
     W = max(mw, ww) + 2 * pad
     H = pad + mark_h + gap + 100 + 28 + pad   # 28 for descender of p
-    ground = bg == PAL["green"]
+    ground = bg == PAL["field"]
     body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth, shadow_len=150 if ground else 0)}</g>'
             f'<g transform="translate({(W - ww) / 2:.2f} {pad + mark_h + gap + 100:.2f})">{inner}</g>')
     return svg_doc(round(W), round(H), body, bg, depth=depth)
@@ -321,7 +324,7 @@ def stacked_doc(c, text_col, bg, depth=True):
 def badge_doc(size=512):
     """Round icon: field-green disc lit softly from the upper centre, with the
     reversed mark and a flat long shadow running to the rim."""
-    g = PAL["green"]
+    g = PAL["field"]
     x0, y0, x1, y1 = MARK_BOX
     mw, mh = x1 - x0, y1 - y0
     s = size * 0.72 / max(mw, mh)
@@ -339,18 +342,18 @@ def badge_doc(size=512):
 
 
 def variants():
-    g, cream, ink = PAL["green"], PAL["cream"], PAL["ink"]
+    g, cream, ink = PAL["field"], PAL["cream"], PAL["ink"]
     return {
         "pherospora-mark": (mark_doc(COLOR, cream, pad=24), cream),
         "pherospora-mark-flat": (mark_doc(COLOR, cream, pad=24, depth=False), cream),
         "pherospora-mark-mono": (mark_doc(MONO, cream, pad=24, depth=False), cream),
         "pherospora-mark-reversed": (mark_doc(REVERSED, g, pad=24), g),
         "pherospora-badge": (badge_doc(), cream),
-        "pherospora-horizontal": (horizontal_doc(COLOR, g, cream), cream),
-        "pherospora-horizontal-flat": (horizontal_doc(COLOR, g, cream, depth=False), cream),
+        "pherospora-horizontal": (horizontal_doc(COLOR, PAL["green"], cream), cream),
+        "pherospora-horizontal-flat": (horizontal_doc(COLOR, PAL["green"], cream, depth=False), cream),
         "pherospora-horizontal-mono": (horizontal_doc(MONO, ink, cream, depth=False), cream),
         "pherospora-horizontal-reversed": (horizontal_doc(REVERSED, cream, g), g),
-        "pherospora-stacked": (stacked_doc(COLOR, g, cream), cream),
+        "pherospora-stacked": (stacked_doc(COLOR, PAL["green"], cream), cream),
         "pherospora-stacked-reversed": (stacked_doc(REVERSED, cream, g), g),
     }
 

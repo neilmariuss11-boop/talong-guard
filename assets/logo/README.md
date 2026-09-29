@@ -39,8 +39,10 @@ renders a quick mark-only preview. Geometry constants are at the top of the scri
 
 | Colour | Hex | Role |
 |---|---|---|
-| Field green | `#1E5A3C` | Wing shadow, wordmark, reversed background |
-| Leaf green | `#3E8C5C` | Wing lit half |
+| Green | `#1E5A3C` | Wing shadow half and wordmark on cream |
+| Green light | `#3E8C5C` | Wing lit half on cream |
+| Field green | `#17452F` | Reversed panels and badge disc |
+| Leaf green | `#3F9463` / `#74C08E` | Wings, head and antennae on field green |
 | Onion violet | `#6B2150` | Bulb shadow |
 | Onion violet light | `#943468` | Bulb lit crescent |
 | Onion violet on green | `#7C2A5B` / `#A63E7C` | Bulb on reversed and badge, a step brighter for contrast |
