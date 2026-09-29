@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A **technopreneurship project** (NOT a thesis) by 4th-year ABE students at **Mindoro State University (MinSU) Main Campus, Victoria, Oriental Mindoro**. The **field site and first market are San Jose, Occidental Mindoro**. San Jose is in *Occidental*, not Oriental, Mindoro. Don't mix them up.
 
-The product is an **autodissemination station for onion armyworm (harabas, *Spodoptera exigua*)**. A pheromone lure draws male moths through a shaded velvet tube dusted with *Metarhizium anisopliae* spores, and they leave alive to infect mates, eggs and larvae. The old name "TalongGuard" (eggplant) is retired. The brand is **TBD**: docs use "the Station" or "[BRAND]", and the recommendation is "Padala" (`proposal.md` §12).
+The product is an **autodissemination station for onion armyworm (harabas, *Spodoptera exigua*)**. A pheromone lure draws male moths through a shaded velvet tube dusted with *Metarhizium anisopliae* spores, and they leave alive to infect mates, eggs and larvae. The old name "TalongGuard" (eggplant) is retired. The brand is **Pherospora** (decided 2026-09-29, `proposal.md` §12; logo in `assets/logo/`). Older docs still say "the Station" or "[BRAND]"; the trademark search at IPOPHL is still open.
 
 **Key constraint:** product/device project, not scientific research. The biology is cited from published literature. The deliverables are a physical device, BOM and business model. Field work is framed as **product validation / demonstration**, never hypothesis research.
 

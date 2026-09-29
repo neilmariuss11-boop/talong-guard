@@ -1,160 +1,307 @@
 #!/usr/bin/env python3
-"""Vector logo symbol for the autodissemination Station (name TBD).
+"""Pherospora logo builder.
 
-Concept: an onion bulb whose leaves are the wings of a harabas moth
-(Spodoptera exigua). Reads as both the crop and the pest. The single spot on
-each wing is the moth's orbicular spot and stands for the Metarhizium spores
-it carries. No wordmark yet: the brand name is on hold.
+Mark: an onion bulb whose leaves are moth wings, each wing carrying a trail
+of three spores toward its tip (pheromone draws the moth in, spores ride out).
+Wordmark: "pherospora" set in Manrope and converted to outlines, so the SVG
+files need no fonts installed.
 
-Depth comes from tonal layering, not effects:
-  * each wing is split along its midrib into a dark and a light half,
-  * the bulb is split into a shadow and a lit side with skin lines cut out,
-  * a thin knockout gap separates wings from bulb.
-A gradient variant exists for screens only; print uses the tonal variant.
-
-Run:  python3 assets/logo/build_logo.py
-Deps: pip install cairosvg pillow
+Run:  python3 assets/logo/build_logo.py            # full export
+      python3 assets/logo/build_logo.py --mark     # mark-only preview
+Deps: pip install cairosvg pillow fonttools
+Fonts: assets/logo/fonts/Manrope[wght].ttf (SIL OFL, see OFL-Manrope.txt)
 """
 from pathlib import Path
 import io
+import sys
 
 OUT = Path(__file__).parent
+FONT = OUT / "fonts" / "Manrope[wght].ttf"
 
 # ------------------------------------------------------------------ palette
 PAL = {
-    "g_dark": "#1B5236",   # wing shadow half
-    "g_light": "#3C8A5A",  # wing lit half
-    "v_dark": "#5E1B40",   # bulb shadow side
-    "v_light": "#8A2D5C",  # bulb lit side
-    "cream": "#F7F4EC",
-    "ink": "#16241C",
+    "green": "#1E5A3C",     # wing dark half, wordmark
+    "green_lt": "#3E8C5C",  # wing lit half
+    "violet": "#6B2150",    # bulb shadow side
+    "violet_lt": "#943468", # bulb lit side
+    "cream": "#F6F3EC",
+    "ink": "#15201A",
 }
 
-# ------------------------------------------------------------------ geometry
-# 512 x 512 artboard, mirror axis x = 256. Wing paths are the LEFT wing.
-BULB = ("M 256 206 C 262 238, 290 256, 318 276 C 346 296, 352 326, 348 350 "
-        "C 342 392, 302 420, 256 422 C 210 420, 170 392, 164 350 "
-        "C 160 326, 166 296, 194 276 C 222 256, 250 238, 256 206 Z")
-BULB_LEFT = ("M 256 206 C 250 238, 222 256, 194 276 C 166 296, 160 326, 164 350 "
-             "C 170 392, 210 420, 256 422 Z")
-SKIN_L = "M 254 244 C 222 280, 212 360, 242 412"
-SKIN_R = "M 258 244 C 290 280, 300 360, 270 412"
-ROOTS = "M 244 421 Q 238 436 230 446 M 256 423 L 256 452 M 268 421 Q 274 436 282 446"
+# ------------------------------------------------------------------ mark geometry (512 grid, mirror at x = 256)
+BULB = ("M 256 240 C 264 272, 344 278, 344 346 "
+        "C 344 398, 304 430, 256 430 "
+        "C 208 430, 168 398, 168 346 "
+        "C 168 278, 248 272, 256 240 Z")
+# lit side: a crescent on the right
+BULB_LIT = ("M 256 240 C 264 272, 344 278, 344 346 "
+            "C 344 398, 304 430, 256 430 "
+            "C 318 406, 330 294, 256 240 Z")
+ROOTS = "M 240 430 Q 236 444, 228 454 M 256 431 L 256 460 M 272 430 Q 276 444, 284 454"
 
-WING = ("M 248 232 C 236 190, 170 120, 82 92 C 110 190, 190 250, 250 244 Z")
-WING_UPPER = "M 248 232 C 236 190, 170 120, 82 92 C 140 140, 200 196, 248 232 Z"
-WING_LOWER = "M 82 92 C 110 190, 190 250, 250 244 L 248 232 C 200 196, 140 140, 82 92 Z"
-SPOT = (168, 198, 9)
+# left wing: base at the thorax, apex up-left, broad rounded trailing edge
+WING = ("M 247 214 C 226 166, 156 98, 86 96 "
+        "C 86 160, 140 250, 247 242 Z")
+WING_UP = ("M 247 214 C 226 166, 156 98, 86 96 "
+           "C 128 132, 192 188, 247 230 Z")
+WING_LOW = ("M 86 96 C 86 160, 140 250, 247 242 "
+            "L 247 230 C 192 188, 128 132, 86 96 Z")
+SPORES = ((186, 218, 10), (148, 192, 7.5), (116, 160, 5))   # along the dark lower half
 
-HEAD = (256, 194, 11)
-ANTENNA = "M 250 186 C 244 160, 232 138, 212 118 C 226 128, 244 150, 256 184 Z"
+THORAX = '<rect x="245" y="204" width="22" height="46" rx="9"/>'
+HEAD = (256, 195, 11)
+ANTENNA = "M 252 186 C 246 166, 236 150, 222 138"
 
-MIRROR = 'transform="translate(512,0) scale(-1,1)"'
+MIRROR = 'transform="translate(512 0) scale(-1 1)"'
 
 
 def both(inner):
-    """Draw inner (left side) and its mirror image."""
     return f"{inner}<g {MIRROR}>{inner}</g>"
 
 
-def mark(c, bg, gradient=False):
-    """c: dict of colours for g_dark, g_light, v_dark, v_light, spot, line."""
-    defs = ""
-    if gradient:
-        defs = (
-            "<defs>"
-            f'<linearGradient id="gw" x1="0" y1="0" x2="1" y2="1">'
-            f'<stop offset="0" stop-color="{c["g_light"]}"/>'
-            f'<stop offset="1" stop-color="{c["g_dark"]}"/></linearGradient>'
-            f'<radialGradient id="gb" cx="0.62" cy="0.42" r="0.75">'
-            f'<stop offset="0" stop-color="{c["v_light"]}"/>'
-            f'<stop offset="1" stop-color="{c["v_dark"]}"/></radialGradient>'
-            "</defs>"
-        )
-        bulb = f'<path d="{BULB}" fill="url(#gb)"/>'
-        wing_fill = f'<path d="{WING}" fill="url(#gw)"/>'
-    else:
-        bulb = (f'<path d="{BULB}" fill="{c["v_light"]}"/>'
-                f'<path d="{BULB_LEFT}" fill="{c["v_dark"]}"/>')
-        wing_fill = (f'<path d="{WING_LOWER}" fill="{c["g_light"]}"/>'
-                     f'<path d="{WING_UPPER}" fill="{c["g_dark"]}"/>')
-
-    skin = (f'<path d="{SKIN_L} M 256 236 L 256 414 {SKIN_R}" stroke="{c["line"]}" '
-            'stroke-width="5" stroke-linecap="round" fill="none" opacity="0.9"/>')
-    roots = (f'<path d="{ROOTS}" stroke="{c["v_dark"]}" stroke-width="6" '
-             'stroke-linecap="round" fill="none"/>')
-    gap = f'<path d="{WING}" fill="{bg}" stroke="{bg}" stroke-width="12" stroke-linejoin="round"/>'
-    sx, sy, sr = SPOT
-    wing = gap + wing_fill + f'<circle cx="{sx}" cy="{sy}" r="{sr}" fill="{c["spot"]}"/>'
+def mark(c, bg):
+    """c: colours for wing_dark, wing_lt, bulb_dark, bulb_lt, spore, head."""
+    # wings first, with a soft self-stroke so the apex is rounded
+    wing = (f'<path d="{WING}" fill="{c["wing_dark"]}" stroke="{c["wing_dark"]}" '
+            'stroke-width="5" stroke-linejoin="round"/>'
+            f'<path d="{WING_UP}" fill="{c["wing_lt"]}"/>'
+            f'<path d="{WING_LOW}" fill="{c["wing_dark"]}"/>'
+            + "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{c["spore"]}"/>'
+                      for x, y, r in SPORES)
+            + f'<path d="{ANTENNA}" stroke="{c["head"]}" stroke-width="4.5" '
+              'stroke-linecap="round" fill="none"/>')
+    thorax = THORAX.replace("<rect", f'<rect fill="{c["head"]}"')
+    # bulb in front, separated from the wings by a background-coloured stroke
+    bulb = (f'<path d="{ROOTS}" stroke="{c["bulb_dark"]}" stroke-width="6" '
+            'stroke-linecap="round" fill="none"/>'
+            f'<path d="{BULB}" fill="{c["bulb_dark"]}" stroke="{bg}" stroke-width="10" '
+            'stroke-linejoin="round" paint-order="stroke"/>'
+            f'<path d="{BULB_LIT}" fill="{c["bulb_lt"]}"/>')
     hx, hy, hr = HEAD
-    head = (f'<circle cx="{hx}" cy="{hy}" r="{hr}" fill="{c["g_dark"]}"/>'
-            + both(f'<path d="{ANTENNA}" fill="{c["g_dark"]}"/>'))
-    return defs + roots + bulb + skin + both(wing) + head
+    head = f'<circle cx="{hx}" cy="{hy}" r="{hr}" fill="{c["head"]}"/>'
+    return both(wing) + thorax + bulb + head
 
 
-COLOR = {"g_dark": PAL["g_dark"], "g_light": PAL["g_light"], "v_dark": PAL["v_dark"],
-         "v_light": PAL["v_light"], "spot": PAL["cream"], "line": PAL["cream"]}
-MONO = {k: PAL["ink"] for k in ("g_dark", "g_light", "v_dark", "v_light")}
-MONO.update(spot=PAL["cream"], line=PAL["cream"])
-REV = {"g_dark": PAL["cream"], "g_light": "#DCE9DF", "v_dark": "#E9D3DE",
-       "v_light": PAL["cream"], "spot": PAL["g_dark"], "line": PAL["g_dark"]}
+COLOR = dict(wing_dark=PAL["green"], wing_lt=PAL["green_lt"], bulb_dark=PAL["violet"],
+             bulb_lt=PAL["violet_lt"], spore=PAL["cream"], head=PAL["green"])
+MONO = dict(wing_dark=PAL["ink"], wing_lt=PAL["ink"], bulb_dark=PAL["ink"],
+            bulb_lt=PAL["ink"], spore=PAL["cream"], head=PAL["ink"])
+REVERSED = dict(wing_dark=PAL["cream"], wing_lt="#CFE0D3", bulb_dark="#E4CBD8",
+                bulb_lt=PAL["cream"], spore=PAL["green"], head=PAL["cream"])
+
+# mark bounding box on the 512 grid (for lockups)
+MARK_BOX = (78, 88, 434, 462)   # x0, y0, x1, y1
 
 
-def svg(content, bg=None, title="Station logo symbol"):
-    rect = f'<rect width="512" height="512" fill="{bg}"/>' if bg else ""
-    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" '
-            f'width="512" height="512"><title>{title}</title>{rect}'
-            f'<g transform="translate(0 -14)">{content}</g></svg>\n')
+# ------------------------------------------------------------------ wordmark outlines
+def wordmark_paths(text, weight=700, tracking=-0.01):
+    """Return (list of (path_d, x_offset), total_width, ascent, descent) in font units
+    scaled so cap height == 100."""
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib.instancer import instantiateVariableFont
+    from fontTools.pens.svgPathPen import SVGPathPen
+
+    f = instantiateVariableFont(TTFont(FONT), {"wght": weight})
+    upem = f["head"].unitsPerEm
+    cap = f["OS/2"].sCapHeight or upem * 0.7
+    xh = f["OS/2"].sxHeight
+    scale = 100 / cap
+    cmap = f.getBestCmap()
+    gs = f.getGlyphSet()
+    hmtx = f["hmtx"]
+    # kerning from GPOS pair adjustment if simple
+    kern = {}
+    try:
+        from fontTools.ttLib.tables import otTables  # noqa
+        gpos = f["GPOS"].table
+        for lookup in gpos.LookupList.Lookup:
+            for st in lookup.SubTable:
+                if st.LookupType != 2:
+                    continue
+                if st.Format == 1:
+                    for i, ps in enumerate(st.PairSet):
+                        first = st.Coverage.glyphs[i]
+                        for pvr in ps.PairValueRecord:
+                            v = pvr.Value1.XAdvance if pvr.Value1 else 0
+                            if v:
+                                kern[(first, pvr.SecondGlyph)] = v
+                elif st.Format == 2:
+                    cd1, cd2 = st.ClassDef1.classDefs, st.ClassDef2.classDefs
+                    for g1 in st.Coverage.glyphs:
+                        c1 = cd1.get(g1, 0)
+                        for g2, c2 in cd2.items():
+                            rec = st.Class1Record[c1].Class2Record[c2]
+                            v = rec.Value1.XAdvance if rec.Value1 else 0
+                            if v:
+                                kern.setdefault((g1, g2), v)
+    except Exception:
+        pass
+
+    glyphs = [cmap[ord(ch)] for ch in text]
+    paths, x = [], 0.0
+    for i, g in enumerate(glyphs):
+        pen = SVGPathPen(gs)
+        gs[g].draw(pen)
+        paths.append((pen.getCommands(), x))
+        adv = hmtx[g][0]
+        if i + 1 < len(glyphs):
+            adv += kern.get((g, glyphs[i + 1]), 0)
+        x += adv + tracking * upem
+    return paths, x * scale, scale, xh * scale
+
+
+def wordmark_svg(text, colour, weight=700, tracking=-0.01):
+    paths, width, scale, xh = wordmark_paths(text, weight, tracking)
+    # font y is up; flip. cap height = 100 units, baseline at y = 0
+    inner = "".join(
+        f'<path transform="translate({x * scale:.2f} 0) scale({scale:.5f} {-scale:.5f})" '
+        f'd="{d}" fill="{colour}"/>' for d, x in paths)
+    return inner, width, xh
+
+
+# ------------------------------------------------------------------ lockups
+def svg_doc(w, h, body, bg=None, title="Pherospora"):
+    rect = f'<rect width="{w}" height="{h}" fill="{bg}"/>' if bg else ""
+    return ('<svg xmlns="http://www.w3.org/2000/svg" '
+            f'viewBox="0 0 {w} {h}" width="{w}" height="{h}">'
+            f'<title>{title}</title>{rect}{body}</svg>\n')
+
+
+def mark_doc(c, bg, size=512, pad=0):
+    x0, y0, x1, y1 = MARK_BOX
+    mw, mh = x1 - x0, y1 - y0
+    s = (size - 2 * pad) / max(mw, mh)
+    tx = pad + (size - 2 * pad - mw * s) / 2 - x0 * s
+    ty = pad + (size - 2 * pad - mh * s) / 2 - y0 * s
+    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg)}</g>'
+    return svg_doc(size, size, body, bg)
+
+
+def horizontal_doc(c, text_col, bg):
+    """Mark at left, wordmark at right, x-height aligned to the bulb centre."""
+    inner, ww, xh = wordmark_svg("pherospora", text_col)
+    cap = 100
+    mark_h = 300                          # mark height in output units
+    x0, y0, x1, y1 = MARK_BOX
+    s = mark_h / (y1 - y0)
+    mw = (x1 - x0) * s
+    gap = 54
+    pad = 48
+    W = pad + mw + gap + ww + pad
+    H = mark_h + 2 * pad
+    # wordmark baseline: centre the x-height band on the mark's vertical centre
+    baseline = pad + mark_h / 2 + xh / 2 + 6
+    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg)}</g>'
+            f'<g transform="translate({pad + mw + gap:.2f} {baseline:.2f})">{inner}</g>')
+    return svg_doc(round(W), round(H), body, bg)
+
+
+def stacked_doc(c, text_col, bg):
+    inner, ww, xh = wordmark_svg("pherospora", text_col)
+    x0, y0, x1, y1 = MARK_BOX
+    mark_h = 330
+    s = mark_h / (y1 - y0)
+    mw = (x1 - x0) * s
+    pad = 56
+    gap = 44
+    W = max(mw, ww) + 2 * pad
+    H = pad + mark_h + gap + 100 + 28 + pad   # 28 for descender of p
+    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg)}</g>'
+            f'<g transform="translate({(W - ww) / 2:.2f} {pad + mark_h + gap + 100:.2f})">{inner}</g>')
+    return svg_doc(round(W), round(H), body, bg)
+
+
+def badge_doc(size=512):
+    g, cream = PAL["green"], PAL["cream"]
+    body = (f'<circle cx="{size/2}" cy="{size/2}" r="{size/2}" fill="{g}"/>'
+            f'<g transform="translate({size*0.14:.1f} {size*0.14:.1f}) scale({size*0.72/512:.5f})">'
+            f'{mark_doc(REVERSED, g, 512)[mark_doc(REVERSED, g, 512).find("<g"):-7]}</g>')
+    return svg_doc(size, size, body)
 
 
 def variants():
-    cream, green = PAL["cream"], PAL["g_dark"]
-    badge_inner = mark(REV, green)
+    g, cream, ink = PAL["green"], PAL["cream"], PAL["ink"]
     return {
-        "symbol-color": (svg(mark(COLOR, cream), cream), cream),
-        "symbol-gradient": (svg(mark(COLOR, cream, gradient=True), cream), cream),
-        "symbol-mono": (svg(mark(MONO, cream), cream), cream),
-        "symbol-reversed": (svg(mark(REV, green), green), green),
-        "symbol-badge": (svg(
-            f'<circle cx="256" cy="270" r="246" fill="{green}"/>'
-            f'<g transform="translate(256 280) scale(.8) translate(-256 -280)">{badge_inner}</g>'),
-            cream),
+        "pherospora-mark": (mark_doc(COLOR, cream, pad=24), cream),
+        "pherospora-mark-mono": (mark_doc(MONO, cream, pad=24), cream),
+        "pherospora-mark-reversed": (mark_doc(REVERSED, g, pad=24), g),
+        "pherospora-badge": (badge_doc(), cream),
+        "pherospora-horizontal": (horizontal_doc(COLOR, g, cream), cream),
+        "pherospora-horizontal-mono": (horizontal_doc(MONO, ink, cream), cream),
+        "pherospora-horizontal-reversed": (horizontal_doc(REVERSED, cream, g), g),
+        "pherospora-stacked": (stacked_doc(COLOR, g, cream), cream),
+        "pherospora-stacked-reversed": (stacked_doc(REVERSED, cream, g), g),
     }
 
 
-def export():
+# ------------------------------------------------------------------ export
+def png(svg_text, width):
     import cairosvg
     from PIL import Image
+    return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg_text.encode(), output_width=width))).convert("RGBA")
+
+
+def export(mark_only=False):
+    from PIL import Image
+    import cairosvg
+
+    if mark_only:
+        s = mark_doc(COLOR, PAL["cream"], pad=24)
+        png(s, 640).save(OUT / "_mark-preview.png")
+        print("wrote _mark-preview.png")
+        return
+
+    for old in OUT.glob("symbol-*"):
+        old.unlink()
+    for old in OUT.glob("_mark-preview.png"):
+        old.unlink()
 
     v = variants()
-    for name, (s, _) in v.items():
+    for name, (s, bg) in v.items():
         (OUT / f"{name}.svg").write_text(s)
-        for px in (1024, 512, 128):
-            cairosvg.svg2png(bytestring=s.encode(), output_width=px,
-                             write_to=str(OUT / f"{name}-{px}.png"))
+        for w in (2048, 1024, 256):
+            cairosvg.svg2png(bytestring=s.encode(), output_width=w, write_to=str(OUT / f"{name}-{w}.png"))
 
-    fav = Image.open(io.BytesIO(cairosvg.svg2png(
-        bytestring=v["symbol-badge"][0].encode(), output_width=256)))
+    fav = png(v["pherospora-badge"][0], 256)
     fav.save(OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
 
-    t, pad = 320, 24
-    names = list(v)
-    sheet = Image.new("RGB", (pad + (t + pad) * len(names), t + 2 * pad + 72), "#E4DFD3")
-    for i, name in enumerate(names):
-        s, bg = v[name]
-        x = pad + i * (t + pad)
-        for j, size in enumerate((t, 64, 32, 16)):
-            tile = Image.new("RGB", (size, size), bg)
-            im = Image.open(io.BytesIO(cairosvg.svg2png(
-                bytestring=s.encode(), output_width=size))).convert("RGBA")
-            tile.paste(im, (0, 0), im)
-            if j == 0:
-                sheet.paste(tile, (x, pad))
-            else:
-                sheet.paste(tile, (x + (j - 1) * 80, pad + t + 8))
+    # preview sheet
+    order = ["pherospora-horizontal", "pherospora-horizontal-reversed", "pherospora-stacked",
+             "pherospora-mark", "pherospora-mark-mono", "pherospora-badge"]
+    tiles = []
+    for n in order:
+        s, bg = v[n]
+        im = png(s, 900 if "horizontal" in n else 420)
+        tile = Image.new("RGB", (im.width + 40, im.height + 40), bg)
+        tile.paste(im, (20, 20), im)
+        tiles.append(tile)
+    gap = 28
+    row1 = tiles[:2]
+    row2 = tiles[2:]
+    W = max(sum(t.width for t in row1) + gap * 3, sum(t.width for t in row2) + gap * 5)
+    H = gap + max(t.height for t in row1) + gap + max(t.height for t in row2) + gap + 120
+    sheet = Image.new("RGB", (W, H), "#DAD5CA")
+    x = gap
+    for t in row1:
+        sheet.paste(t, (x, gap)); x += t.width + gap
+    y2 = gap + max(t.height for t in row1) + gap
+    x = gap
+    for t in row2:
+        sheet.paste(t, (x, y2)); x += t.width + gap
+    # small-size checks
+    y3 = y2 + max(t.height for t in row2) + gap
+    x = gap
+    for n, size in (("pherospora-mark", 64), ("pherospora-mark", 32), ("pherospora-mark", 16),
+                    ("pherospora-badge", 64), ("pherospora-badge", 32), ("pherospora-badge", 16),
+                    ("pherospora-horizontal", 240), ("pherospora-horizontal", 120)):
+        im = png(v[n][0], size)
+        bgc = v[n][1]
+        t = Image.new("RGB", (im.width, im.height), bgc)
+        t.paste(im, (0, 0), im)
+        sheet.paste(t, (x, y3 + (80 - im.height) // 2)); x += im.width + 24
     sheet.save(OUT / "logo-preview.png")
-    print("exported:", ", ".join(names))
+    print("exported:", ", ".join(v))
 
 
 if __name__ == "__main__":
-    export()
+    export(mark_only="--mark" in sys.argv)

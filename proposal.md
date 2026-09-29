@@ -394,7 +394,9 @@ Full plan: `phase6-validation-plan.md`. These are **product validation** steps (
 | **Kontra-Harabas** | Against harabas | Clear | Generic; hard to trademark |
 | **MothPost** | Moths as the postal service | Playful story for pitches | English; cute rather than serious |
 
-**Recommendation:** **"Padala"** as the brand (farmer-facing story), with **"SporaLure"** as the technology or product-line name for DOST, funders and export (e.g., *Padala SporaLure Station*). Run an IPOPHL trademark search before committing.
+**Decision (2026-09-29): "Pherospora."** The team rejected the dictionary-word options above because a common Tagalog word is weak as a trademark. Pherospora is a coined word (pheromone + spore) that names the mechanism, works in Filipino, English and Spanish, and reads as a company rather than a product. A web screen on 2026-09-29 found no company, product or mark using it; the nearest neighbours (*Phaeospora*, a lichen-fungus genus, and Pherros, a US pharma research mark) are in other classes and sound different. Logo files are in `assets/logo/`.
+
+**Next actions:** search the IPOPHL database and the WIPO Global Brand Database in class 5 (biological pest-control preparations) and class 21 (insect traps); file the word and the logo together as a combined mark; consider also filing the phonetic spelling "Ferospora"; check the Facebook page name and a .ph domain; test the name with Ilocano and Tagalog speakers in San Jose.
 
 ---
 

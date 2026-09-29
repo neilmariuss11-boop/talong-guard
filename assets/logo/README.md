@@ -1,38 +1,43 @@
-# Logo symbol (draft)
+# Pherospora logo
 
-Symbol only. The brand name is on hold, so there is no wordmark yet.
+Brand: **Pherospora** (pheromone + spore). Web screen on 2026-09-29 found no company,
+product or mark using the word. IPOPHL and WIPO database searches are still to do
+(classes 5 and 21) before anything is printed.
 
-**Concept.** An onion bulb whose leaves are the wings of a harabas moth
-(*Spodoptera exigua*), so the mark reads as both the crop and the pest. The spot on
-each wing is the moth's real orbicular spot. It also stands for the *Metarhizium*
-spores the moth carries away from the Station to its own kind.
+**Mark.** An onion bulb whose leaves are moth wings. The pheromone draws the moth
+in, and each wing carries a trail of three spores toward its tip, the spores riding
+out. Reads as crop and pest at once. Two-tone wings and a lit crescent on the bulb
+give depth without gradients, so it prints in flat colour.
 
-**Depth without effects.** Each wing is split along its midrib into a dark and a
-light half. The bulb has a shadow side, a lit side and cut-out skin lines. A thin
-gap separates the wings from the bulb. This keeps the mark printable in flat
-colour. A gradient version exists for screens only.
+**Wordmark.** "pherospora" in Manrope Bold, converted to outlines, so the SVG files
+need no font installed. Manrope is SIL Open Font Licence (`fonts/OFL-Manrope.txt`).
 
-**Build.** `python3 assets/logo/build_logo.py` regenerates every file here.
-Requires `pip install cairosvg pillow`. Edit the path constants near the top to
-reshape the mark, or `PAL` to recolour it.
+**Build.** `python3 assets/logo/build_logo.py` regenerates everything.
+Requires `pip install cairosvg pillow fonttools`. `--mark` renders a quick mark-only
+preview. Geometry constants are at the top of the script.
 
 | File | Use |
 |---|---|
-| `symbol-color.svg` | Primary mark on light backgrounds, tonal flat colour |
-| `symbol-gradient.svg` | Screen-only version with soft gradients |
-| `symbol-mono.svg` | One-colour print, rubber stamp, spray stencil on the hood |
-| `symbol-reversed.svg` | On green or dark backgrounds, slides, shirts |
-| `symbol-badge.svg` | Round app-style icon, stickers, social avatar, favicon |
-| `*-1024.png`, `*-512.png`, `*-128.png` | Raster exports of each variant |
-| `favicon.ico` | 16 to 64 px icon from the badge |
-| `logo-preview.png` | All variants side by side, with 64, 32 and 16 px checks |
+| `pherospora-horizontal.svg` | Primary lockup. Documents, banners, slide footers |
+| `pherospora-horizontal-reversed.svg` | Same on field green |
+| `pherospora-horizontal-mono.svg` | One-colour print, forms, fax-quality copies |
+| `pherospora-stacked.svg`, `-reversed` | Square placements, title slides, posters |
+| `pherospora-mark.svg`, `-mono`, `-reversed` | Symbol alone. Stencil on the hood, stickers, app icon |
+| `pherospora-badge.svg` | Round icon on green. Social avatar, favicon |
+| `*-2048.png`, `*-1024.png`, `*-256.png` | Raster exports of every variant |
+| `favicon.ico` | 16 to 64 px |
+| `logo-preview.png` | All variants on one sheet with 16, 32 and 64 px checks |
 
 | Colour | Hex | Role |
 |---|---|---|
-| Field green dark / light | `#1B5236` / `#3C8A5A` | Wings |
-| Onion violet dark / light | `#5E1B40` / `#8A2D5C` | Bulb |
-| Cream | `#F7F4EC` | Background |
-| Ink | `#16241C` | One-colour print |
+| Field green | `#1E5A3C` | Wing shadow, wordmark, reversed background |
+| Leaf green | `#3E8C5C` | Wing lit half |
+| Onion violet | `#6B2150` | Bulb shadow |
+| Onion violet light | `#943468` | Bulb lit crescent |
+| Cream | `#F6F3EC` | Background, spores |
+| Ink | `#15201A` | One-colour print |
 
-Status: concept for team review. Before final use, refine the curves by eye in
-Inkscape or Illustrator and pair the symbol with a wordmark once the name is chosen.
+Rules of use: keep clear space around the lockup equal to the bulb's width; do not
+place the colour mark on photographs without the cream or green panel; the mark
+alone is fine down to 32 px, the badge down to 16 px, the horizontal lockup down to
+about 120 px wide.
