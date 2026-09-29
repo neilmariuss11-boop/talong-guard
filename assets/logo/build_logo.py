@@ -59,27 +59,98 @@ def both(inner):
     return f"{inner}<g {MIRROR}>{inner}</g>"
 
 
-def mark(c, bg):
-    """c: colours for wing_dark, wing_lt, bulb_dark, bulb_lt, spore, head."""
+# ------------------------------------------------------------------ colour helpers
+def _rgb(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def _hex(rgb):
+    return "#%02X%02X%02X" % tuple(max(0, min(255, round(v))) for v in rgb)
+
+
+def mix(a, b, t):
+    """Blend colour a toward colour b by t (0..1)."""
+    ra, rb = _rgb(a), _rgb(b)
+    return _hex(tuple(x + (y - x) * t for x, y in zip(ra, rb)))
+
+
+def lighten(h, t):
+    return mix(h, "#FFFFFF", t)
+
+
+def darken(h, t):
+    return mix(h, "#000000", t)
+
+
+def mark(c, bg, depth=True):
+    """c: colours for wing_dark, wing_lt, bulb_dark, bulb_lt, spore, head.
+
+    depth=True adds restrained tonal gradients, a faint cast shadow where the
+    wings meet the bulb, and a soft highlight on the bulb. depth=False is the
+    flat version for one-colour print and stencils.
+    """
+    if depth:
+        # wings: a touch lighter at the base, darker toward the apex
+        defs = (
+            "<defs>"
+            '<linearGradient id="gWd" x1="1" y1="1" x2="0" y2="0">'
+            f'<stop offset="0" stop-color="{lighten(c["wing_dark"], 0.06)}"/>'
+            f'<stop offset="1" stop-color="{darken(c["wing_dark"], 0.14)}"/></linearGradient>'
+            '<linearGradient id="gWl" x1="1" y1="1" x2="0" y2="0">'
+            f'<stop offset="0" stop-color="{lighten(c["wing_lt"], 0.08)}"/>'
+            f'<stop offset="1" stop-color="{darken(c["wing_lt"], 0.10)}"/></linearGradient>'
+            # bulb: lit from the upper right, darker at the lower left
+            '<radialGradient id="gB" cx="0.62" cy="0.30" r="0.85">'
+            f'<stop offset="0" stop-color="{lighten(c["bulb_dark"], 0.10)}"/>'
+            f'<stop offset="0.55" stop-color="{c["bulb_dark"]}"/>'
+            f'<stop offset="1" stop-color="{darken(c["bulb_dark"], 0.18)}"/></radialGradient>'
+            '<linearGradient id="gBl" x1="0" y1="0" x2="0.4" y2="1">'
+            f'<stop offset="0" stop-color="{lighten(c["bulb_lt"], 0.14)}"/>'
+            f'<stop offset="1" stop-color="{c["bulb_lt"]}"/></linearGradient>'
+            # cast shadow of the wings onto the top of the bulb
+            '<radialGradient id="gS" cx="0.5" cy="0" r="0.6">'
+            '<stop offset="0" stop-color="#000" stop-opacity="0.22"/>'
+            '<stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>'
+            # soft highlight on the bulb shoulder
+            '<radialGradient id="gH" cx="0.68" cy="0.28" r="0.35">'
+            '<stop offset="0" stop-color="#FFF" stop-opacity="0.16"/>'
+            '<stop offset="1" stop-color="#FFF" stop-opacity="0"/></radialGradient>'
+            '<clipPath id="cB"><path d="' + BULB + '"/></clipPath>'
+            "</defs>"
+        )
+        wing_dark, wing_lt = "url(#gWd)", "url(#gWl)"
+        bulb_dark, bulb_lt = "url(#gB)", "url(#gBl)"
+        extras = (f'<g clip-path="url(#cB)">'
+                  f'<rect x="150" y="236" width="212" height="120" fill="url(#gS)"/>'
+                  f'<path d="{BULB}" fill="url(#gH)"/></g>')
+        head_fill = f'{darken(c["head"], 0.04)}'
+    else:
+        defs, extras = "", ""
+        wing_dark, wing_lt = c["wing_dark"], c["wing_lt"]
+        bulb_dark, bulb_lt = c["bulb_dark"], c["bulb_lt"]
+        head_fill = c["head"]
+
     # wings first, with a soft self-stroke so the apex is rounded
-    wing = (f'<path d="{WING}" fill="{c["wing_dark"]}" stroke="{c["wing_dark"]}" '
+    wing = (f'<path d="{WING}" fill="{wing_dark}" stroke="{c["wing_dark"]}" '
             'stroke-width="5" stroke-linejoin="round"/>'
-            f'<path d="{WING_UP}" fill="{c["wing_lt"]}"/>'
-            f'<path d="{WING_LOW}" fill="{c["wing_dark"]}"/>'
+            f'<path d="{WING_UP}" fill="{wing_lt}"/>'
+            f'<path d="{WING_LOW}" fill="{wing_dark}"/>'
             + "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="{c["spore"]}"/>'
                       for x, y, r in SPORES)
             + f'<path d="{ANTENNA}" stroke="{c["head"]}" stroke-width="4.5" '
               'stroke-linecap="round" fill="none"/>')
-    thorax = THORAX.replace("<rect", f'<rect fill="{c["head"]}"')
+    thorax = THORAX.replace("<rect", f'<rect fill="{head_fill}"')
     # bulb in front, separated from the wings by a background-coloured stroke
     bulb = (f'<path d="{ROOTS}" stroke="{c["bulb_dark"]}" stroke-width="6" '
             'stroke-linecap="round" fill="none"/>'
-            f'<path d="{BULB}" fill="{c["bulb_dark"]}" stroke="{bg}" stroke-width="10" '
-            'stroke-linejoin="round" paint-order="stroke"/>'
-            f'<path d="{BULB_LIT}" fill="{c["bulb_lt"]}"/>')
+            f'<path d="{BULB}" fill="none" stroke="{bg}" stroke-width="10" '
+            'stroke-linejoin="round"/>'
+            f'<path d="{BULB}" fill="{bulb_dark}"/>'
+            f'<path d="{BULB_LIT}" fill="{bulb_lt}"/>')
     hx, hy, hr = HEAD
-    head = f'<circle cx="{hx}" cy="{hy}" r="{hr}" fill="{c["head"]}"/>'
-    return both(wing) + thorax + bulb + head
+    head = f'<circle cx="{hx}" cy="{hy}" r="{hr}" fill="{head_fill}"/>'
+    return defs + both(wing) + thorax + bulb + extras + head
 
 
 COLOR = dict(wing_dark=PAL["green"], wing_lt=PAL["green_lt"], bulb_dark=PAL["violet"],
@@ -167,17 +238,17 @@ def svg_doc(w, h, body, bg=None, title="Pherospora"):
             f'<title>{title}</title>{rect}{body}</svg>\n')
 
 
-def mark_doc(c, bg, size=512, pad=0):
+def mark_doc(c, bg, size=512, pad=0, depth=True):
     x0, y0, x1, y1 = MARK_BOX
     mw, mh = x1 - x0, y1 - y0
     s = (size - 2 * pad) / max(mw, mh)
     tx = pad + (size - 2 * pad - mw * s) / 2 - x0 * s
     ty = pad + (size - 2 * pad - mh * s) / 2 - y0 * s
-    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg)}</g>'
+    body = f'<g transform="translate({tx:.2f} {ty:.2f}) scale({s:.5f})">{mark(c, bg, depth)}</g>'
     return svg_doc(size, size, body, bg)
 
 
-def horizontal_doc(c, text_col, bg):
+def horizontal_doc(c, text_col, bg, depth=True):
     """Mark at left, wordmark at right, x-height aligned to the bulb centre."""
     inner, ww, xh = wordmark_svg("pherospora", text_col)
     cap = 100
@@ -191,12 +262,12 @@ def horizontal_doc(c, text_col, bg):
     H = mark_h + 2 * pad
     # wordmark baseline: centre the x-height band on the mark's vertical centre
     baseline = pad + mark_h / 2 + xh / 2 + 6
-    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg)}</g>'
+    body = (f'<g transform="translate({pad - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth)}</g>'
             f'<g transform="translate({pad + mw + gap:.2f} {baseline:.2f})">{inner}</g>')
     return svg_doc(round(W), round(H), body, bg)
 
 
-def stacked_doc(c, text_col, bg):
+def stacked_doc(c, text_col, bg, depth=True):
     inner, ww, xh = wordmark_svg("pherospora", text_col)
     x0, y0, x1, y1 = MARK_BOX
     mark_h = 330
@@ -206,7 +277,7 @@ def stacked_doc(c, text_col, bg):
     gap = 44
     W = max(mw, ww) + 2 * pad
     H = pad + mark_h + gap + 100 + 28 + pad   # 28 for descender of p
-    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg)}</g>'
+    body = (f'<g transform="translate({(W - mw) / 2 - x0 * s:.2f} {pad - y0 * s:.2f}) scale({s:.5f})">{mark(c, bg, depth)}</g>'
             f'<g transform="translate({(W - ww) / 2:.2f} {pad + mark_h + gap + 100:.2f})">{inner}</g>')
     return svg_doc(round(W), round(H), body, bg)
 
@@ -223,11 +294,13 @@ def variants():
     g, cream, ink = PAL["green"], PAL["cream"], PAL["ink"]
     return {
         "pherospora-mark": (mark_doc(COLOR, cream, pad=24), cream),
-        "pherospora-mark-mono": (mark_doc(MONO, cream, pad=24), cream),
+        "pherospora-mark-flat": (mark_doc(COLOR, cream, pad=24, depth=False), cream),
+        "pherospora-mark-mono": (mark_doc(MONO, cream, pad=24, depth=False), cream),
         "pherospora-mark-reversed": (mark_doc(REVERSED, g, pad=24), g),
         "pherospora-badge": (badge_doc(), cream),
         "pherospora-horizontal": (horizontal_doc(COLOR, g, cream), cream),
-        "pherospora-horizontal-mono": (horizontal_doc(MONO, ink, cream), cream),
+        "pherospora-horizontal-flat": (horizontal_doc(COLOR, g, cream, depth=False), cream),
+        "pherospora-horizontal-mono": (horizontal_doc(MONO, ink, cream, depth=False), cream),
         "pherospora-horizontal-reversed": (horizontal_doc(REVERSED, cream, g), g),
         "pherospora-stacked": (stacked_doc(COLOR, g, cream), cream),
         "pherospora-stacked-reversed": (stacked_doc(REVERSED, cream, g), g),
@@ -235,10 +308,56 @@ def variants():
 
 
 # ------------------------------------------------------------------ export
+class _Chrome:
+    """Rasterise SVG through headless Chromium (exact gradient/clip support).
+    Falls back to cairosvg if Playwright or the browser is unavailable."""
+    _pw = _browser = _page = None
+
+    @classmethod
+    def render(cls, svg_text, width):
+        from PIL import Image
+        import re
+        if cls._page is None and cls._browser is not False:
+            try:
+                import os
+                from playwright.sync_api import sync_playwright
+                os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "/opt/pw-browsers")
+                cls._pw = sync_playwright().start()
+                exe = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
+                kw = {"args": ["--no-sandbox"]}
+                if Path(exe).exists():
+                    kw["executable_path"] = exe
+                cls._browser = cls._pw.chromium.launch(**kw)
+                cls._page = cls._browser.new_page(device_scale_factor=1)
+            except Exception as e:  # pragma: no cover
+                print("Chromium unavailable, using cairosvg:", e)
+                cls._browser = False
+        if cls._page is None:
+            import cairosvg
+            return Image.open(io.BytesIO(cairosvg.svg2png(
+                bytestring=svg_text.encode(), output_width=width))).convert("RGBA")
+        m = re.search(r'viewBox="0 0 (\d+) (\d+)"', svg_text)
+        vw, vh = int(m.group(1)), int(m.group(2))
+        height = round(width * vh / vw)
+        s = re.sub(r'width="\d+" height="\d+"', f'width="{width}" height="{height}"', svg_text, count=1)
+        cls._page.set_viewport_size({"width": width, "height": height})
+        cls._page.set_content("<body style='margin:0;background:transparent'>" + s + "</body>")
+        data = cls._page.screenshot(omit_background=True, clip={"x": 0, "y": 0, "width": width, "height": height})
+        return Image.open(io.BytesIO(data)).convert("RGBA")
+
+    @classmethod
+    def close(cls):
+        try:
+            if cls._browser:
+                cls._browser.close()
+            if cls._pw:
+                cls._pw.stop()
+        except Exception:
+            pass
+
+
 def png(svg_text, width):
-    import cairosvg
-    from PIL import Image
-    return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg_text.encode(), output_width=width))).convert("RGBA")
+    return _Chrome.render(svg_text, width)
 
 
 def export(mark_only=False):
@@ -248,6 +367,7 @@ def export(mark_only=False):
     if mark_only:
         s = mark_doc(COLOR, PAL["cream"], pad=24)
         png(s, 640).save(OUT / "_mark-preview.png")
+        _Chrome.close()
         print("wrote _mark-preview.png")
         return
 
@@ -260,7 +380,7 @@ def export(mark_only=False):
     for name, (s, bg) in v.items():
         (OUT / f"{name}.svg").write_text(s)
         for w in (2048, 1024, 256):
-            cairosvg.svg2png(bytestring=s.encode(), output_width=w, write_to=str(OUT / f"{name}-{w}.png"))
+            png(s, w).save(OUT / f"{name}-{w}.png")
 
     fav = png(v["pherospora-badge"][0], 256)
     fav.save(OUT / "favicon.ico", sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
@@ -300,6 +420,7 @@ def export(mark_only=False):
         t.paste(im, (0, 0), im)
         sheet.paste(t, (x, y3 + (80 - im.height) // 2)); x += im.width + 24
     sheet.save(OUT / "logo-preview.png")
+    _Chrome.close()
     print("exported:", ", ".join(v))
 
 

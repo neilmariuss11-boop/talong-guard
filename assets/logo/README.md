@@ -6,20 +6,26 @@ product or mark using the word. IPOPHL and WIPO database searches are still to d
 
 **Mark.** An onion bulb whose leaves are moth wings. The pheromone draws the moth
 in, and each wing carries a trail of three spores toward its tip, the spores riding
-out. Reads as crop and pest at once. Two-tone wings and a lit crescent on the bulb
-give depth without gradients, so it prints in flat colour.
+out. Reads as crop and pest at once. Depth is done the way current marks do it: soft
+tonal gradients on the bulb and wings, a faint cast shadow where the wings meet
+the bulb, and a small highlight on the bulb shoulder. No drop shadows, no bevels.
+`-flat` versions carry the same two-tone shapes with no gradients for stencils,
+embroidery and cheap print. `-mono` is a single colour.
 
 **Wordmark.** "pherospora" in Manrope Bold, converted to outlines, so the SVG files
 need no font installed. Manrope is SIL Open Font Licence (`fonts/OFL-Manrope.txt`).
 
 **Build.** `python3 assets/logo/build_logo.py` regenerates everything.
-Requires `pip install cairosvg pillow fonttools`. `--mark` renders a quick mark-only
-preview. Geometry constants are at the top of the script.
+Requires `pip install cairosvg pillow fonttools playwright`. PNGs are rasterised
+through headless Chromium for exact gradient and clip rendering, and fall back to
+cairosvg (which loses some depth effects) when a browser is not available. `--mark`
+renders a quick mark-only preview. Geometry constants are at the top of the script.
 
 | File | Use |
 |---|---|
 | `pherospora-horizontal.svg` | Primary lockup. Documents, banners, slide footers |
 | `pherospora-horizontal-reversed.svg` | Same on field green |
+| `pherospora-horizontal-flat.svg`, `pherospora-mark-flat.svg` | Flat colour, no gradients. Stencils, embroidery, low-cost print |
 | `pherospora-horizontal-mono.svg` | One-colour print, forms, fax-quality copies |
 | `pherospora-stacked.svg`, `-reversed` | Square placements, title slides, posters |
 | `pherospora-mark.svg`, `-mono`, `-reversed` | Symbol alone. Stencil on the hood, stickers, app icon |
